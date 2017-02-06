@@ -9,3 +9,5 @@ cd Projects
 git clone https://github.com/hackhitchin/piwars3.git  
 sudo apt-get install python-cwiid  
 '''
+
+I have commit permissions la la la
