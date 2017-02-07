@@ -20,7 +20,7 @@ class Arduino():
             xonxoff=False)
 
         # Motors disabled by default. Its a safety thing.
-        self.enable_motors = False
+        self.motors_enabled = False
 
         while (self.ser.readline() == ""):
             print("Waiting for serial")
@@ -30,7 +30,7 @@ class Arduino():
     def enable_motors(self, enable):
         """ Called when we want to enable/disable the motors.
             When disabled, will ignore any new motor commands. """
-        self.enable_motors = enable
+        self.motors_enabled = enable
 
     def throttle(self, left_micros, right_micros):
         """ Send motors command to change speed in servo

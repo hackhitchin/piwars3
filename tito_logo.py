@@ -18,20 +18,19 @@ class rc:
     def run_auto(self):
         self.drive.enable_motors(True)
         """Read a sensor and set motor speeds accordingly"""
-        while not self.killed:
+        while not self.killed and self.ticks < 100:
             prox = self.drive.read_sensor()
 
             # sensor measures distance to left wall
             # so lower sensor value means more left motor needed
-            self.leftspeed = (20 - prox) / 20.0
-            self.rightspeed = (prox) / 20.0
+            self.leftspeed = (40 - prox) / 40.0
+            self.rightspeed = (prox / 40.0) + 0.5
 
-            self.drive.throttle(self.leftspeed, self.rightspeed)
-
+            self.drive.throttle( self.leftspeed, self.rightspeed )
             print ("Motors %f, %f" % (self.leftspeed, self.rightspeed))
 
-            time.sleep(0.5)
-
+            self.ticks = self.ticks + 1
+            time.sleep(0.1)
 
 if __name__ == "__main__":
     drive = core.Core()
