@@ -24,3 +24,16 @@ class rc:
             # Sleep between loops to allow other stuff to
             # happen and not over burden Pi and Arduino.
             time.sleep(0.5)
+
+
+if __name__ == "__main__":
+    core = core.Core()
+    rc = rc(core)
+    try:
+        rc.run_auto()
+    except (KeyboardInterrupt) as e:
+        # except (Exception, KeyboardInterrupt) as e:
+        # Stop any active threads before leaving
+        rc.stop()
+        core.stop()
+        print("Quitting")
