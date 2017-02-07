@@ -4,11 +4,11 @@ import time
 # import sounds
 
 
-class rc:
-    def __init__(self, core):
+class TitoLogo:
+    def __init__(self, core_module):
         """Class Constructor"""
         self.killed = False
-        self.core = core
+        self.core = core_module
         self.ticks = 0
 
     def stop(self):
@@ -35,12 +35,12 @@ class rc:
 
 if __name__ == "__main__":
     core = core.Core()
-    rc = rc(core)
+    tito_logo = TitoLogo(core)
     try:
-        rc.run_auto()
+        tito_logo.run_auto()
     except (KeyboardInterrupt) as e:
         # except (Exception, KeyboardInterrupt) as e:
         # Stop any active threads before leaving
-        rc.stop()
+        tito_logo.stop()
         core.stop()
         print("Quitting")
