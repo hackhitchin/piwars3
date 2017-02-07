@@ -18,8 +18,29 @@ class rc:
         """Read a sensor and set motor speeds accordingly"""
         while not self.killed:
             # While in RC mode, get joystick states and pass speeds to motors.
-            self.core_module.throttle(self.leftspeed, self.rightspeed)
-            print ("Motors %f, %f" % (self.leftspeed, self.rightspeed))
+            try:
+                l_joystick_state = \
+                    self.wiimote.get_classic_joystick_state(True)
+                r_joystick_state = \
+                    self.wiimote.get_classic_joystick_state(False)
+            except:
+                print("Failed to get Joystick")
+
+            # Annotate joystick states to screen
+            if l_joystick_state:
+                print("l_joystick_state: {}".format(l_joystick_state))
+            if r_joystick_state:
+                print("r_joystick_state: {}".format(r_joystick_state))
+
+            # Grab normalised x,y / steering,throttle
+            # from left and right joysticks.
+            l_joystick_pos = l_joystick_state['state']['normalised']
+            l_throttle, l_steering = l_joystick_pos
+            r_joystick_pos = r_joystick_state['state']['normalised']
+            r_throttle, r_steering = r_joystick_pos
+
+            self.core_module.throttle(self.l_throttle, self.r_throttle)
+            print ("Motors %f, %f" % (self.l_throttle, self.r_throttle))
 
             # Sleep between loops to allow other stuff to
             # happen and not over burden Pi and Arduino.
