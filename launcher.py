@@ -3,12 +3,12 @@ import sys
 import cwiid
 import logging
 import time
-# import drivetrain
+import threading
 from wiimote import Wiimote, WiimoteException
 import RPi.GPIO as GPIO
 
 import core
-
+import rc
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
@@ -24,8 +24,23 @@ class launcher:
         GPIO.setwarnings(False)
         self.GPIO = GPIO
 
+        self.challenge = None
+        self.challenge_thread = None
+
         # Shutting down status
         self.shutting_down = False
+
+    def stop_threads(self):
+        """ Single point of call to stop any RC or Challenge Threads """
+        if self.challenge:
+            self.challenge.stop()
+            self.challenge = None
+            self.challenge_thread = None
+            logging.info("Stopping Challenge Thread")
+        else:
+            logging.info("No Challenge Thread")
+        # Safety setting
+        self.set_neutral(self.drive, self.wiimote)
 
     def run(self):
         """ Main Running loop controling bot mode and menu state """
@@ -56,33 +71,26 @@ class launcher:
             # except:
             #     print("Failed to get Joystick")
 
-            # try:
-            #     l_joystick_state = \
-            #         self.wiimote.get_classic_joystick_state(True)
-            #     r_joystick_state = \
-            #         self.wiimote.get_classic_joystick_state(False)
-            #     if l_joystick_state:
-            #         print("l_joystick_state: {0}".format(l_joystick_state))
-            #     if r_joystick_state:
-            #         print("r_joystick_state: {0}".format(r_joystick_state))
-            # except:
-            #     print("Failed to get Joystick")
-
             if buttons_state is not None:
                 if (buttons_state & cwiid.BTN_A):
-                    print("BUTTON_A")
-                    if self.motors:
-                        self.motors.send_command_motors("1\n")
+                    logging.info("Entering into RC Mode")
+                    self.challenge = rc.rc(self.drive, self.wiimote)
+                    # Create and start a new thread
+                    # running the remote control script
+                    self.challenge_thread = threading.Thread(
+                        target=self.challenge.run)
+                    self.challenge_thread.start()
+
                 if (buttons_state & cwiid.BTN_B):
-                    print("BUTTON_B")
+                    logging.info("BUTTON_B")
                 if (buttons_state & cwiid.BTN_UP):
-                    print("BUTTON_UP")
+                    logging.info("BUTTON_UP")
                 if (buttons_state & cwiid.BTN_DOWN):
-                    print("BUTTON_DOWN")
+                    logging.info("BUTTON_DOWN")
                 if (buttons_state & cwiid.BTN_LEFT):
-                    print("BUTTON_LEFT")
+                    logging.info("BUTTON_LEFT")
                 if (buttons_state & cwiid.BTN_RIGHT):
-                    print("BUTTON_RIGHT")
+                    logging.info("BUTTON_RIGHT")
 
             if classic_buttons_state is not None:
                 # if (classic_buttons_state & cwiid.CLASSIC_BTN_UP):
