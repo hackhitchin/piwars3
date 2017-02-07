@@ -17,9 +17,19 @@ class Wiimote():
     def __init__(
         self,
         max_tries=5,
-        joystick_range=None
+        joystick_range=None,
+        joystick_classic_l_range=None,
+        joystick_classic_r_range=None
     ):
+        """ Constructor """
+        # Initialise joystick ranges to EITHER
+        # parameter passed in or default range.
         self.joystick_range = joystick_range if joystick_range else [50, 200]
+        self.joystick_classic_l_range = joystick_classic_l_range \
+            if joystick_classic_l_range else [50, 200]
+        self.joystick_classic_r_range = joystick_classic_r_range \
+            if joystick_classic_r_range else [50, 200]
+        # Initialise wiimote
         self.wm = None
         attempts = 0
 
@@ -104,23 +114,43 @@ class Wiimote():
         else:
             if left_stick:
                 joystick_state_raw = self.wm.state['classic']['l_stick']
+                joystick_state_clipped = [
+                    clip(channel,
+                         *self.joystick_classic_l_range)
+                    for channel
+                    in joystick_state_raw
+                ]
+                joystick_state_normalised = [
+                    interp(channel, self.joystick_classic_l_range, [-1, 1])
+                    for channel
+                    in joystick_state_raw
+                ]
+                return dict(
+                    range=self.joystick_classic_l_range,
+                    state=dict(
+                        raw=joystick_state_raw,
+                        clipped=joystick_state_clipped,
+                        normalised=joystick_state_normalised
+                    )
+                )
             else:
                 joystick_state_raw = self.wm.state['classic']['r_stick']
-            joystick_state_clipped = [
-                clip(channel, *self.joystick_range)
-                for channel
-                in joystick_state_raw
-            ]
-            joystick_state_normalised = [
-                interp(channel, self.joystick_range, [-1, 1])
-                for channel
-                in joystick_state_raw
-            ]
-            return dict(
-                range=self.joystick_range,
-                state=dict(
-                    raw=joystick_state_raw,
-                    clipped=joystick_state_clipped,
-                    normalised=joystick_state_normalised
+                joystick_state_clipped = [
+                    clip(channel,
+                         *self.joystick_classic_r_range)
+                    for channel
+                    in joystick_state_raw
+                ]
+                joystick_state_normalised = [
+                    interp(channel, self.joystick_classic_r_range, [-1, 1])
+                    for channel
+                    in joystick_state_raw
+                ]
+                return dict(
+                    range=self.joystick_classic_r_range,
+                    state=dict(
+                        raw=joystick_state_raw,
+                        clipped=joystick_state_clipped,
+                        normalised=joystick_state_normalised
+                    )
                 )
-            )
