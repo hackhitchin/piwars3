@@ -7,18 +7,19 @@ import time
 from wiimote import Wiimote, WiimoteException
 import RPi.GPIO as GPIO
 
-import drivetrain
+import core
 
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
 
 class launcher:
-    def __init__(self, motors):
+    def __init__(self):
 
-        # default menu item is remote control
+        # Initialise wiimote, will be created at beginning of loop.
         self.wiimote = None
-        self.motors = motors
+        # Instantiate CORE / Chassis module and store in the launcher.
+        self.core = core.Core()
 
         GPIO.setwarnings(False)
         self.GPIO = GPIO
@@ -118,9 +119,7 @@ class launcher:
             time.sleep(0.05)
 
 if __name__ == "__main__":
-    motors = drivetrain.DriveTrain()
-    # motors = None
-    launcher = launcher(motors)
+    launcher = launcher()
     try:
         launcher.run()
     except (Exception, KeyboardInterrupt) as e:
