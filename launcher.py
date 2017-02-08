@@ -40,7 +40,7 @@ class launcher:
         else:
             logging.info("No Challenge Thread")
         # Safety setting
-        self.set_neutral(self.drive, self.wiimote)
+        self.core.enable_motors(False)
 
     def run(self):
         """ Main Running loop controling bot mode and menu state """
@@ -73,8 +73,13 @@ class launcher:
 
             if buttons_state is not None:
                 if (buttons_state & cwiid.BTN_A):
+                    # Kill any previous Challenge / RC mode
+                    self.stop_threads()
+
+                    # Inform user we are about to start RC mode
                     logging.info("Entering into RC Mode")
                     self.challenge = rc.rc(self.drive, self.wiimote)
+
                     # Create and start a new thread
                     # running the remote control script
                     self.challenge_thread = threading.Thread(
