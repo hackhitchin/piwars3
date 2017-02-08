@@ -14,8 +14,10 @@ class rc:
         self.killed = True
 
     def run(self):
-        self.core_module.enable_motors(True)
-        """Read a sensor and set motor speeds accordingly"""
+        """ Main Challenge method. Has to exist and is the
+            start point for the threaded challenge. """
+
+        # Loop indefinitely, or until this thread is flagged as stopped.
         while not self.killed:
             # While in RC mode, get joystick states and pass speeds to motors.
             try:
@@ -56,5 +58,5 @@ if __name__ == "__main__":
         # except (Exception, KeyboardInterrupt) as e:
         # Stop any active threads before leaving
         rc.stop()
-        core.stop()
+        core.set_neutral()
         print("Quitting")
