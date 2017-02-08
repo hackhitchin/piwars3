@@ -40,7 +40,7 @@ class Core():
 
         # Send motor neutral if disabling.
         if not enable:
-            self.stop()
+            self.set_neutral()
 
         # AFTER we have sent neutral, enable/disable motors
         self.arduino.enable_motors(enable)
@@ -69,7 +69,7 @@ class Core():
         # Tell the Arduino to set motors to that speed immediately
         self.arduino.direct_micros(left_micros, right_micros)
 
-    def stop(self):
+    def set_neutral(self):
         """ Send neutral to the motors IMEDIATELY. """
         self.arduino.direct_micros(LEFT_MID, RIGHT_MID)
 
