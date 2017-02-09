@@ -14,12 +14,35 @@ class rc:
         self.killed = True
 
     def run(self):
-        self.core_module.enable_motors(True)
-        """Read a sensor and set motor speeds accordingly"""
+        """ Main Challenge method. Has to exist and is the
+            start point for the threaded challenge. """
+
+        # Loop indefinitely, or until this thread is flagged as stopped.
         while not self.killed:
             # While in RC mode, get joystick states and pass speeds to motors.
-            self.core_module.throttle(self.leftspeed, self.rightspeed)
-            print ("Motors %f, %f" % (self.leftspeed, self.rightspeed))
+            try:
+                l_joystick_state = \
+                    self.wiimote.get_classic_joystick_state(True)
+                r_joystick_state = \
+                    self.wiimote.get_classic_joystick_state(False)
+            except:
+                print("Failed to get Joystick")
+
+            # Annotate joystick states to screen
+            if l_joystick_state:
+                print("l_joystick_state: {}".format(l_joystick_state))
+            if r_joystick_state:
+                print("r_joystick_state: {}".format(r_joystick_state))
+
+            # Grab normalised x,y / steering,throttle
+            # from left and right joysticks.
+            l_joystick_pos = l_joystick_state['state']['normalised']
+            l_throttle, l_steering = l_joystick_pos
+            r_joystick_pos = r_joystick_state['state']['normalised']
+            r_throttle, r_steering = r_joystick_pos
+
+            self.core_module.throttle(self.l_throttle, self.r_throttle)
+            print ("Motors %f, %f" % (self.l_throttle, self.r_throttle))
 
             # Sleep between loops to allow other stuff to
             # happen and not over burden Pi and Arduino.
@@ -35,5 +58,5 @@ if __name__ == "__main__":
         # except (Exception, KeyboardInterrupt) as e:
         # Stop any active threads before leaving
         rc.stop()
-        core.stop()
+        core.set_neutral()
         print("Quitting")
