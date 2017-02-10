@@ -10,4 +10,8 @@ git clone https://github.com/hackhitchin/piwars3.git
 sudo apt-get install python-cwiid  
 '''
 
-I have commit permissions la la la
+PID class found at 
+https://github.com/ivmech/ivPID
+
+Linked from 
+http://code.activestate.com/recipes/577231-discrete-pid-controller/

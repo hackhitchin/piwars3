@@ -3,6 +3,8 @@ import core
 import time
 # import sounds
 
+''' 10-2-2017: This code is completely untested; don't be surprised when it 
+doesn't compile, run or do anything sensible.'''
 
 class WallFollower:
     def __init__(self, core_module):
@@ -12,12 +14,53 @@ class WallFollower:
         self.ticks = 0
         self.tick_time = 0.1 # How many seconds per control loop
         self.time_limit = 10 # How many seconds to run for
-        self.left_motor_scale = 0.3  # What proportion of full throttle to use
-        self.right_motor_scale = 0.3
 
     def stop(self):
         """Simple method to stop the RC loop"""
         self.killed = True
+
+    def decide_speeds(self, sensorvalue):
+        """ Set up return values at the start"""
+        leftspeed = 0
+        rightspeed = 0
+
+        if self.control_mode == "LINEAR":
+            """ Deviation is distance from intended midpoint.
+                Right is positive, left is negative
+                Rate is how much to add/subtract from motor speed """
+
+            distance_midpoint = 10
+            deviation = (sensorvalue - 10) / 10.0 # [-1, 1]
+
+            speed_mid = 0.3
+            speed_range = 0.3
+
+            leftspeed = (speed_mid - (deviation * speed_range) )
+            rightspeed = (speed_mid + (deviation * speed_range) )
+
+            return leftspeed, rightspeed
+
+        elif self.control_mode == "EXPO":
+            distance_midpoint = 10
+            deviation = (sensorvalue - 10) / 10.0 # [-1, 1]
+
+            if (deviation < 0):
+                deviation = 0 - (deviation * deviation)
+            else:
+                deviation = deviation * deviation
+
+            speed_mid = 0.3
+            speed_range = 0.3
+
+            leftspeed = (speed_mid - (deviation * speed_range) )
+            rightspeed = (speed_mid + (deviation * speed_range) )
+            
+        else:
+            leftspeed = speed_mid
+            leftspeed = speed_mid
+
+        return leftspeed, rightspeed
+
 
     def run(self):
         """Read a sensor and set motor speeds accordingly"""
@@ -30,8 +73,8 @@ class WallFollower:
 
             # sensor measures distance to left wall (0 - 20cm)
             # so lower sensor value means more left motor needed
-            self.leftspeed = ((20 - prox) / 20) * self.left_motor_scale
-            self.rightspeed = (prox / 20) * self.right_motor_scale
+            
+            leftspeed, rightspeed = decide_speeds(prox, "EXPO")
 
             self.core.throttle(self.leftspeed, self.rightspeed)
             print ("Motors %f, %f" % (self.leftspeed, self.rightspeed))
