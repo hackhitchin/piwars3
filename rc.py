@@ -114,7 +114,7 @@ class rc:
 
             # Sleep between loops to allow other stuff to
             # happen and not over burden Pi and Arduino.
-            time.sleep(0.5)
+            time.sleep(0.05)
 
 
 if __name__ == "__main__":
