@@ -39,61 +39,61 @@ class rc:
             except:
                 print("Failed to get Joystick")
 
-            # Get raw joystick values. Using it to calibrate min/max range
-            l_joystick_raw_pos = l_joystick_state['state']['raw']
-            l_joystick_y, l_joystick_x = l_joystick_raw_pos
-            # min/max [X]
-            if self.l_max_x == -1:
-                self.l_max_x = l_joystick_x
-            else:
-                self.l_max_x = max(self.l_max_x, l_joystick_x)
-            if self.l_min_x == -1:
-                self.l_min_x = l_joystick_x
-            else:
-                self.l_min_x = min(self.l_min_x, l_joystick_x)
-            # min/max [Y]
-            if self.l_max_y == -1:
-                self.l_max_y = l_joystick_y
-            else:
-                self.l_max_y = max(self.l_max_y, l_joystick_y)
-            if self.l_min_y == -1:
-                self.l_min_y = l_joystick_y
-            else:
-                self.l_min_y = min(self.l_min_y, l_joystick_y)
+            # # Get raw joystick values. Using it to calibrate min/max range
+            # l_joystick_raw_pos = l_joystick_state['state']['raw']
+            # l_joystick_y, l_joystick_x = l_joystick_raw_pos
+            # # min/max [X]
+            # if self.l_max_x == -1:
+            #     self.l_max_x = l_joystick_x
+            # else:
+            #     self.l_max_x = max(self.l_max_x, l_joystick_x)
+            # if self.l_min_x == -1:
+            #     self.l_min_x = l_joystick_x
+            # else:
+            #     self.l_min_x = min(self.l_min_x, l_joystick_x)
+            # # min/max [Y]
+            # if self.l_max_y == -1:
+            #     self.l_max_y = l_joystick_y
+            # else:
+            #     self.l_max_y = max(self.l_max_y, l_joystick_y)
+            # if self.l_min_y == -1:
+            #     self.l_min_y = l_joystick_y
+            # else:
+            #     self.l_min_y = min(self.l_min_y, l_joystick_y)
 
-            r_joystick_raw_pos = r_joystick_state['state']['raw']
-            r_joystick_y, r_joystick_x = r_joystick_raw_pos
-            # min/max [X]
-            if self.r_max_x == -1:
-                self.r_max_x = r_joystick_x
-            else:
-                self.r_max_x = max(self.r_max_x, r_joystick_x)
-            if self.r_min_x == -1:
-                self.r_min_x = r_joystick_x
-            else:
-                self.r_min_x = min(self.r_min_x, r_joystick_x)
-            # min/max [Y]
-            if self.r_max_y == -1:
-                self.r_max_y = r_joystick_y
-            else:
-                self.r_max_y = max(self.r_max_y, r_joystick_y)
-            if self.r_min_y == -1:
-                self.r_min_y = r_joystick_y
-            else:
-                self.r_min_y = min(self.r_min_y, r_joystick_y)
+            # r_joystick_raw_pos = r_joystick_state['state']['raw']
+            # r_joystick_y, r_joystick_x = r_joystick_raw_pos
+            # # min/max [X]
+            # if self.r_max_x == -1:
+            #     self.r_max_x = r_joystick_x
+            # else:
+            #     self.r_max_x = max(self.r_max_x, r_joystick_x)
+            # if self.r_min_x == -1:
+            #     self.r_min_x = r_joystick_x
+            # else:
+            #     self.r_min_x = min(self.r_min_x, r_joystick_x)
+            # # min/max [Y]
+            # if self.r_max_y == -1:
+            #     self.r_max_y = r_joystick_y
+            # else:
+            #     self.r_max_y = max(self.r_max_y, r_joystick_y)
+            # if self.r_min_y == -1:
+            #     self.r_min_y = r_joystick_y
+            # else:
+            #     self.r_min_y = min(self.r_min_y, r_joystick_y)
 
-            print("Left raw X[{},{}] Y[{},{}]".format(
-                self.l_min_x,
-                self.l_max_x,
-                self.l_min_y,
-                self.l_max_y)
-            )
-            print("Right raw X[{},{}] Y[{},{}]".format(
-                self.r_min_x,
-                self.r_max_x,
-                self.r_min_y,
-                self.r_max_y)
-            )
+            # print("Left raw X[{},{}] Y[{},{}]".format(
+            #     self.l_min_x,
+            #     self.l_max_x,
+            #     self.l_min_y,
+            #     self.l_max_y)
+            # )
+            # print("Right raw X[{},{}] Y[{},{}]".format(
+            #     self.r_min_x,
+            #     self.r_max_x,
+            #     self.r_min_y,
+            #     self.r_max_y)
+            # )
 
             # Annotate joystick states to screen
             # if l_joystick_state:
@@ -110,7 +110,7 @@ class rc:
 
             if self.core_module:
                 self.core_module.throttle(l_throttle, r_throttle)
-            # print ("Motors %f, %f" % (self.l_throttle, self.r_throttle))
+            print ("Motors %f, %f" % (self.l_throttle, self.r_throttle))
 
             # Sleep between loops to allow other stuff to
             # happen and not over burden Pi and Arduino.

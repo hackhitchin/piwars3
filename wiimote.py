@@ -27,14 +27,14 @@ class Wiimote():
         self.joystick_range = joystick_range if joystick_range else [50, 200]
 
         # Found raw joystick values.
-        # idle = 32, max = 63
+        # idle = 32, [0->63]
         self.joystick_classic_l_range = joystick_classic_l_range \
-            if joystick_classic_l_range else [50, 200]
+            if joystick_classic_l_range else [0, 63]
 
         # Found raw joystick values.
-        # idle = 16, max = 31
+        # idle = 16, [0->31]
         self.joystick_classic_r_range = joystick_classic_r_range \
-            if joystick_classic_r_range else [50, 200]
+            if joystick_classic_r_range else [0, 31]
 
         # Initialise wiimote
         self.wm = None
