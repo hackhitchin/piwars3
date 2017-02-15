@@ -108,7 +108,8 @@ class rc:
             r_joystick_pos = r_joystick_state['state']['normalised']
             r_throttle, r_steering = r_joystick_pos
 
-            self.core_module.throttle(self.l_throttle, self.r_throttle)
+            if self.core_module:
+                self.core_module.throttle(l_throttle, r_throttle)
             # print ("Motors %f, %f" % (self.l_throttle, self.r_throttle))
 
             # Sleep between loops to allow other stuff to
