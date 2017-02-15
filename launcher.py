@@ -148,4 +148,6 @@ if __name__ == "__main__":
         launcher.run()
     except (Exception, KeyboardInterrupt) as e:
         # Stop any active threads before leaving
+        launcher.wiimote = None
+        launcher.stop_threads()  # This will set neutral for us.
         print("Stopping")

@@ -25,10 +25,14 @@ class Wiimote():
         # Initialise joystick ranges to EITHER
         # parameter passed in or default range.
         self.joystick_range = joystick_range if joystick_range else [50, 200]
+
+        # It appears classic joysticks idle at raw value of 16 for both X and Y
         self.joystick_classic_l_range = joystick_classic_l_range \
             if joystick_classic_l_range else [50, 200]
+
         self.joystick_classic_r_range = joystick_classic_r_range \
             if joystick_classic_r_range else [50, 200]
+
         # Initialise wiimote
         self.wm = None
         attempts = 0
