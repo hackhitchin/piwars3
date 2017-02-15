@@ -87,7 +87,9 @@ class launcher:
                     self.challenge_thread.start()
 
                 if (buttons_state & cwiid.BTN_B):
-                    logging.info("BUTTON_B")
+                    # Kill any previous Challenge / RC mode
+                    self.stop_threads()
+
                 if (buttons_state & cwiid.BTN_UP):
                     logging.info("BUTTON_UP")
                 if (buttons_state & cwiid.BTN_DOWN):
