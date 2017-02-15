@@ -3,10 +3,11 @@ import time
 
 
 class rc:
-    def __init__(self, core_module):
+    def __init__(self, core_module, wm):
         """Class Constructor"""
         self.killed = False
         self.core_module = core_module
+        self.wiimote = wm
         self.ticks = 0
 
         # Store Max joystick values for left/right
@@ -28,7 +29,7 @@ class rc:
             start point for the threaded challenge. """
 
         # Loop indefinitely, or until this thread is flagged as stopped.
-        while not self.killed:
+        while self.wiimote and not self.killed:
             # While in RC mode, get joystick states and pass speeds to motors.
             try:
                 l_joystick_state = \

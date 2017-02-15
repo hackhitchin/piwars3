@@ -78,7 +78,7 @@ class launcher:
 
                     # Inform user we are about to start RC mode
                     logging.info("Entering into RC Mode")
-                    self.challenge = rc.rc(self.drive, self.wiimote)
+                    self.challenge = rc.rc(self.core, self.wiimote)
 
                     # Create and start a new thread
                     # running the remote control script
