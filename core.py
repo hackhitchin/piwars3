@@ -32,7 +32,8 @@ class Core():
         self.right_channel = 2
         # Proximity sensor: roughly cm from closest measurable point
         self.prox = sensor.Sensor(0, 450, 20, 0)
-        self.arduino = arduino.Arduino()
+        # self.arduino = arduino.Arduino()
+        self.arduino = None
 
     def enable_motors(self, enable):
         """ Called when we want to enable/disable the motors.
@@ -43,7 +44,8 @@ class Core():
             self.set_neutral()
 
         # AFTER we have sent neutral, enable/disable motors
-        self.arduino.enable_motors(enable)
+        if self.arduino:
+            self.arduino.enable_motors(enable)
 
     def throttle(self, left_speed, right_speed):
         """ Send motors speed value in range [-1,1]
@@ -54,7 +56,8 @@ class Core():
         right_micros = self.right_servo.micros(right_speed)
 
         # Tell the Arduino to move to that speed (eventually)
-        self.arduino.throttle(left_micros, right_micros)
+        if self.arduino:
+            self.arduino.throttle(left_micros, right_micros)
 
     def direct_speed(self, left_speed, right_speed):
         """ Send motors speed value in range [-1,1]
@@ -67,14 +70,19 @@ class Core():
         right_micros = self.right_servo.micros(right_speed)
 
         # Tell the Arduino to set motors to that speed immediately
-        self.arduino.direct_micros(left_micros, right_micros)
+        if self.arduino:
+            self.arduino.direct_micros(left_micros, right_micros)
 
     def set_neutral(self):
         """ Send neutral to the motors IMEDIATELY. """
-        self.arduino.direct_micros(LEFT_MID, RIGHT_MID)
+        if self.arduino:
+            self.arduino.direct_micros(LEFT_MID, RIGHT_MID)
 
     def read_sensor(self):
         """ Read a sensor value and return it. """
-        sensor_voltage = self.arduino.read_sensor()
-        sensor_value = self.prox.translate(sensor_voltage)
+        if self.arduino:
+            sensor_voltage = self.arduino.read_sensor()
+            sensor_value = self.prox.translate(sensor_voltage)
+        else:
+            sensor_value = None
         return sensor_value
