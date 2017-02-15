@@ -82,9 +82,11 @@ class launcher:
 
                     # Create and start a new thread
                     # running the remote control script
+                    logging.info("Starting RC Thread")
                     self.challenge_thread = threading.Thread(
                         target=self.challenge.run)
                     self.challenge_thread.start()
+                    logging.info("RC Thread Running")
 
                 if (buttons_state & cwiid.BTN_B):
                     # Kill any previous Challenge / RC mode
