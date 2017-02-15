@@ -50,7 +50,7 @@ class rc:
             if self.l_min_x == -1:
                 self.l_min_x = l_joystick_x
             else:
-                self.l_min_x = max(self.l_min_x, l_joystick_x)
+                self.l_min_x = min(self.l_min_x, l_joystick_x)
             # min/max [Y]
             if self.l_max_y == -1:
                 self.l_max_y = l_joystick_y
@@ -59,7 +59,7 @@ class rc:
             if self.l_min_y == -1:
                 self.l_min_y = l_joystick_y
             else:
-                self.l_min_y = max(self.l_min_y, l_joystick_y)
+                self.l_min_y = min(self.l_min_y, l_joystick_y)
 
             r_joystick_raw_pos = r_joystick_state['state']['raw']
             r_joystick_y, r_joystick_x = r_joystick_raw_pos
@@ -71,7 +71,7 @@ class rc:
             if self.r_min_x == -1:
                 self.r_min_x = r_joystick_x
             else:
-                self.r_min_x = max(self.r_min_x, r_joystick_x)
+                self.r_min_x = min(self.r_min_x, r_joystick_x)
             # min/max [Y]
             if self.r_max_y == -1:
                 self.r_max_y = r_joystick_y
@@ -80,7 +80,7 @@ class rc:
             if self.r_min_y == -1:
                 self.r_min_y = r_joystick_y
             else:
-                self.r_min_y = max(self.r_min_y, r_joystick_y)
+                self.r_min_y = min(self.r_min_y, r_joystick_y)
 
             print("Left raw X[{},{}] Y[{},{}]".format(
                 self.l_min_x,
