@@ -25,7 +25,7 @@ def create(gpio, addr):
         Don't set the address to 0x29 if there are any more devices to do. Chaos
         will ensue. """
     RPIO.setup(gpio, RPIO.IN)        # Unreset the pin
-    time.sleep(0.5)                # Wait for chip to wake
+    time.sleep(0.002)                # Wait for chip to wake
 
     # Create a VL53L0X object
     tof = VL53L0X.VL53L0X(address = addr)
