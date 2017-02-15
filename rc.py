@@ -96,17 +96,17 @@ class rc:
             # )
 
             # Annotate joystick states to screen
-            # if l_joystick_state:
-            #     print("l_joystick_state: {}".format(l_joystick_state))
-            # if r_joystick_state:
-            #     print("r_joystick_state: {}".format(r_joystick_state))
+            if l_joystick_state:
+                print("l_joystick_state: {}".format(l_joystick_state))
+            if r_joystick_state:
+                print("r_joystick_state: {}".format(r_joystick_state))
 
             # Grab normalised x,y / steering,throttle
             # from left and right joysticks.
             l_joystick_pos = l_joystick_state['state']['normalised']
-            l_throttle, l_steering = l_joystick_pos
+            l_steering, l_throttle = l_joystick_pos
             r_joystick_pos = r_joystick_state['state']['normalised']
-            r_throttle, r_steering = r_joystick_pos
+            r_steering, r_throttle = r_joystick_pos
 
             if self.core_module:
                 self.core_module.throttle(l_throttle, r_throttle)
