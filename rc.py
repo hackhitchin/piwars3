@@ -110,7 +110,7 @@ class rc:
 
             if self.core_module:
                 self.core_module.throttle(l_throttle, r_throttle)
-            print ("Motors %f, %f" % (self.l_throttle, self.r_throttle))
+            print ("Motors %f, %f" % (l_throttle, r_throttle))
 
             # Sleep between loops to allow other stuff to
             # happen and not over burden Pi and Arduino.
