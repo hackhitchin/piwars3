@@ -53,13 +53,13 @@ class rc:
                 self.l_min_x = max(self.l_min_x, l_joystick_x)
             # min/max [Y]
             if self.l_max_y == -1:
-                self.l_max_y = l_joystick_x
+                self.l_max_y = l_joystick_y
             else:
-                self.l_max_y = max(self.l_max_y, l_joystick_x)
+                self.l_max_y = max(self.l_max_y, l_joystick_y)
             if self.l_min_y == -1:
-                self.l_min_y = l_joystick_x
+                self.l_min_y = l_joystick_y
             else:
-                self.l_min_y = max(self.l_min_y, l_joystick_x)
+                self.l_min_y = max(self.l_min_y, l_joystick_y)
 
             r_joystick_raw_pos = r_joystick_state['state']['raw']
             r_joystick_y, r_joystick_x = r_joystick_raw_pos
@@ -74,19 +74,19 @@ class rc:
                 self.r_min_x = max(self.r_min_x, r_joystick_x)
             # min/max [Y]
             if self.r_max_y == -1:
-                self.r_max_y = r_joystick_x
+                self.r_max_y = r_joystick_y
             else:
-                self.r_max_y = max(self.r_max_y, r_joystick_x)
+                self.r_max_y = max(self.r_max_y, r_joystick_y)
             if self.r_min_y == -1:
-                self.r_min_y = r_joystick_x
+                self.r_min_y = r_joystick_y
             else:
-                self.r_min_y = max(self.r_min_y, r_joystick_x)
+                self.r_min_y = max(self.r_min_y, r_joystick_y)
 
             print("Left raw X[{},{}] Y[{},{}]".format(
-                self.r_min_x,
-                self.r_max_x,
-                self.r_min_y,
-                self.r_max_y)
+                self.l_min_x,
+                self.l_max_x,
+                self.l_min_y,
+                self.l_max_y)
             )
             print("Right raw X[{},{}] Y[{},{}]".format(
                 self.r_min_x,
