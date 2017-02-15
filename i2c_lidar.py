@@ -5,21 +5,25 @@ import VL53L0X
 import RPIO
 
 # Turn off all VL53L0X devices
-# Takes a list of GPIO pins the devices' XSHUT ports are connected to,
-# and brings each one to 0V
 def xshut(gpios):
+    """ Turn off all VL53L0X devices.
+
+        Takes a list of GPIO pins the devices' XSHUT ports are connected to,
+        and brings each one to 0 volts (low) """
     for x in gpios:
         RPIO.setup(x, RPIO.OUT, initial = 0)
 
-# Turn on a specific device (by GPIO pin which its XSHUT port is connected
-# to), create a VL53L0X object for it, and start it in constant ranging
-# mode.
-# Unresets the chip by making the GPIO a high-impedence input, so that the
-# pull-up resister on the LIDAR board can bring XSHUT high.
-#
-# Don't set the address to 0x29 if there are any more devices to do. Chaos
-# will ensue.
+# Turn on a specific device
 def create(gpio, addr):
+    """ Turn on a specific device (by GPIO pin which its XSHUT port is connected
+        to), create a VL53L0X object for it, and start it in constant ranging
+        mode.
+
+        Unresets the chip by making the GPIO a high-impedence input, so that the
+        pull-up resister on the LIDAR board can bring XSHUT high.
+
+        Don't set the address to 0x29 if there are any more devices to do. Chaos
+        will ensue. """
     RPIO.setup(gpio, RPIO.IN)        # Unreset the pin
     time.sleep(0.5)                # Wait for chip to wake
 
