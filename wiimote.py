@@ -59,6 +59,9 @@ class Wiimote():
                 logging.error("attempt {0}".format(attempts))
                 attempts += 1
 
+        # Report success
+        logging.info("Connected")
+
         # set wiimote to report button presses and accelerometer state
         self.wm.rpt_mode = cwiid.RPT_BTN | cwiid.RPT_ACC | cwiid.RPT_EXT
 
