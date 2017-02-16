@@ -78,16 +78,20 @@ class launcher:
 
                     # Inform user we are about to start RC mode
                     logging.info("Entering into RC Mode")
-                    self.challenge = rc.rc(self.drive, self.wiimote)
+                    self.challenge = rc.rc(self.core, self.wiimote)
 
                     # Create and start a new thread
                     # running the remote control script
+                    logging.info("Starting RC Thread")
                     self.challenge_thread = threading.Thread(
                         target=self.challenge.run)
                     self.challenge_thread.start()
+                    logging.info("RC Thread Running")
 
                 if (buttons_state & cwiid.BTN_B):
-                    logging.info("BUTTON_B")
+                    # Kill any previous Challenge / RC mode
+                    self.stop_threads()
+
                 if (buttons_state & cwiid.BTN_UP):
                     logging.info("BUTTON_UP")
                 if (buttons_state & cwiid.BTN_DOWN):
@@ -144,4 +148,6 @@ if __name__ == "__main__":
         launcher.run()
     except (Exception, KeyboardInterrupt) as e:
         # Stop any active threads before leaving
+        launcher.wiimote = None
+        launcher.stop_threads()  # This will set neutral for us.
         print("Stopping")
