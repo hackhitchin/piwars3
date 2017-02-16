@@ -24,6 +24,64 @@ class rc:
         """Simple method to stop the RC loop"""
         self.killed = True
 
+    def show_joystick_calibration(self, l_joystick_state, r_joystick_state):
+        """ Shows the Min/Max raw joystick values to the prompt. """
+        # Get raw joystick values. Using it to calibrate min/max range
+        l_joystick_raw_pos = l_joystick_state['state']['raw']
+        l_joystick_y, l_joystick_x = l_joystick_raw_pos
+        # min/max [X]
+        if self.l_max_x == -1:
+            self.l_max_x = l_joystick_x
+        else:
+            self.l_max_x = max(self.l_max_x, l_joystick_x)
+        if self.l_min_x == -1:
+            self.l_min_x = l_joystick_x
+        else:
+            self.l_min_x = min(self.l_min_x, l_joystick_x)
+        # min/max [Y]
+        if self.l_max_y == -1:
+            self.l_max_y = l_joystick_y
+        else:
+            self.l_max_y = max(self.l_max_y, l_joystick_y)
+        if self.l_min_y == -1:
+            self.l_min_y = l_joystick_y
+        else:
+            self.l_min_y = min(self.l_min_y, l_joystick_y)
+
+        r_joystick_raw_pos = r_joystick_state['state']['raw']
+        r_joystick_y, r_joystick_x = r_joystick_raw_pos
+        # min/max [X]
+        if self.r_max_x == -1:
+            self.r_max_x = r_joystick_x
+        else:
+            self.r_max_x = max(self.r_max_x, r_joystick_x)
+        if self.r_min_x == -1:
+            self.r_min_x = r_joystick_x
+        else:
+            self.r_min_x = min(self.r_min_x, r_joystick_x)
+        # min/max [Y]
+        if self.r_max_y == -1:
+            self.r_max_y = r_joystick_y
+        else:
+            self.r_max_y = max(self.r_max_y, r_joystick_y)
+        if self.r_min_y == -1:
+            self.r_min_y = r_joystick_y
+        else:
+            self.r_min_y = min(self.r_min_y, r_joystick_y)
+
+        print("Left raw X[{},{}] Y[{},{}]".format(
+            self.l_min_x,
+            self.l_max_x,
+            self.l_min_y,
+            self.l_max_y)
+        )
+        print("Right raw X[{},{}] Y[{},{}]".format(
+            self.r_min_x,
+            self.r_max_x,
+            self.r_min_y,
+            self.r_max_y)
+        )
+
     def run(self):
         """ Main Challenge method. Has to exist and is the
             start point for the threaded challenge. """
@@ -39,60 +97,10 @@ class rc:
             except:
                 print("Failed to get Joystick")
 
-            # # Get raw joystick values. Using it to calibrate min/max range
-            # l_joystick_raw_pos = l_joystick_state['state']['raw']
-            # l_joystick_y, l_joystick_x = l_joystick_raw_pos
-            # # min/max [X]
-            # if self.l_max_x == -1:
-            #     self.l_max_x = l_joystick_x
-            # else:
-            #     self.l_max_x = max(self.l_max_x, l_joystick_x)
-            # if self.l_min_x == -1:
-            #     self.l_min_x = l_joystick_x
-            # else:
-            #     self.l_min_x = min(self.l_min_x, l_joystick_x)
-            # # min/max [Y]
-            # if self.l_max_y == -1:
-            #     self.l_max_y = l_joystick_y
-            # else:
-            #     self.l_max_y = max(self.l_max_y, l_joystick_y)
-            # if self.l_min_y == -1:
-            #     self.l_min_y = l_joystick_y
-            # else:
-            #     self.l_min_y = min(self.l_min_y, l_joystick_y)
-
-            # r_joystick_raw_pos = r_joystick_state['state']['raw']
-            # r_joystick_y, r_joystick_x = r_joystick_raw_pos
-            # # min/max [X]
-            # if self.r_max_x == -1:
-            #     self.r_max_x = r_joystick_x
-            # else:
-            #     self.r_max_x = max(self.r_max_x, r_joystick_x)
-            # if self.r_min_x == -1:
-            #     self.r_min_x = r_joystick_x
-            # else:
-            #     self.r_min_x = min(self.r_min_x, r_joystick_x)
-            # # min/max [Y]
-            # if self.r_max_y == -1:
-            #     self.r_max_y = r_joystick_y
-            # else:
-            #     self.r_max_y = max(self.r_max_y, r_joystick_y)
-            # if self.r_min_y == -1:
-            #     self.r_min_y = r_joystick_y
-            # else:
-            #     self.r_min_y = min(self.r_min_y, r_joystick_y)
-
-            # print("Left raw X[{},{}] Y[{},{}]".format(
-            #     self.l_min_x,
-            #     self.l_max_x,
-            #     self.l_min_y,
-            #     self.l_max_y)
-            # )
-            # print("Right raw X[{},{}] Y[{},{}]".format(
-            #     self.r_min_x,
-            #     self.r_max_x,
-            #     self.r_min_y,
-            #     self.r_max_y)
+            # Show Joystick Min/Max raw values for calibration
+            # self.show_joystick_calibration(
+            #     l_joystick_state,
+            #     r_joystick_state
             # )
 
             # Annotate joystick states to screen
