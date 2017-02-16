@@ -20,3 +20,9 @@ Needs to be run as root and set PYTHONPATH to find the VL53L0X library, eg.
 
     sudo PYTHONPATH=/home/pi/VL53L0X_rasp_python/python ./lidar_test.py
 
+## PID ##
+PID class found at 
+https://github.com/ivmech/ivPID
+
+Linked from 
+http://code.activestate.com/recipes/577231-discrete-pid-controller/
