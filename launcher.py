@@ -50,7 +50,8 @@ class launcher:
             logging.info("No Challenge Thread")
 
         # Reset LED to NO MODE
-        self.wiimote.wm.led = self.MODE_NONE
+        if self.wiimote and self.wiimote.wm:
+            self.wiimote.wm.led = self.MODE_NONE
 
         # Safety setting
         self.core.enable_motors(False)
@@ -65,6 +66,10 @@ class launcher:
 
             except WiimoteException:
                 logging.error("Could not connect to wiimote. please try again")
+
+            # Reset LED to NO MODE
+            if self.wiimote and self.wiimote.wm:
+                self.wiimote.wm.led = self.MODE_NONE
 
             # Constantly check wiimote for button presses
             while self.wiimote:
@@ -92,7 +97,8 @@ class launcher:
                         self.stop_threads()
 
                         # Set Wiimote LED to RC Mode index
-                        self.wiimote.wm.led = self.MODE_RC
+                        if self.wiimote and self.wiimote.wm:
+                            self.wiimote.wm.led = self.MODE_RC
 
                         # Inform user we are about to start RC mode
                         logging.info("Entering into RC Mode")
@@ -159,6 +165,12 @@ class launcher:
                     #     print("KEY_HOME")
 
                 time.sleep(0.05)
+
+                # Verify Wiimote is connected each loop. If not, set wiimote
+                # to None and it "should" attempt to reconnect.
+                if not self.wiimote.wm:
+                    self.stop_threads()
+                    self.wiimote = None
 
 
 if __name__ == "__main__":
