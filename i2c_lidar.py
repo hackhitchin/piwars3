@@ -29,6 +29,6 @@ def create(gpio, addr):
 
     # Create a VL53L0X object
     tof = VL53L0X.VL53L0X(address = addr)
-    tof.start_ranging(VL53L0X.VL53L0X_LONG_RANGE_MODE)
+    tof.start_ranging(VL53L0X.VL53L0X_HIGH_SPEED_MODE)
 
     return tof
