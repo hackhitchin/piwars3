@@ -7,14 +7,14 @@ import sensor
 # Minimum and maximum theoretical pulse widths. Ignore reversing here
 # ESC "DB1" midpoint is about 1440
 # ESC "DB2" midpoint is 1500
-LEFT_MIN = 940
-RIGHT_MIN = 1000
+LEFT_MIN = 800
+RIGHT_MIN = 800
 
-LEFT_MID = 1440
-RIGHT_MID = 1500
+LEFT_MID = 1300
+RIGHT_MID = 1300
 
-LEFT_MAX = 1940
-RIGHT_MAX = 2000
+LEFT_MAX = 1800
+RIGHT_MAX = 1800
 
 
 class Core():
