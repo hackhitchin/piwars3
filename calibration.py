@@ -3,7 +3,7 @@ import time
 import cwiid
 
 
-class calibration:
+class Calibration:
     def __init__(self, core_module, wm):
         """Class Constructor"""
         self.killed = False
@@ -26,41 +26,42 @@ class calibration:
     def run(self):
         """ Main Challenge method. Has to exist and is the
             start point for the threaded challenge. """
+        adjust_value = 5
 
         # Loop indefinitely, or until this thread is flagged as stopped.
         while self.wiimote and not self.killed:
             # While in RC mode, get joystick states and pass speeds to motors.
 
-            buttons_state = self.wiimote.get_buttons()
+            # buttons_state = self.wiimote.get_buttons()
+            # if buttons_state is not None:
+            #     if (buttons_state & cwiid.BTN_A):
+            #         print("BUTTON_A")
+            #     if (buttons_state & cwiid.BTN_B):
+            #         print("BUTTON_B")
+
+            #     if (buttons_state & cwiid.BTN_1):
+            #         print("BUTTON_1")
+            #     if (buttons_state & cwiid.BTN_2):
+            #         print("BUTTON_2")
+
+            #     if (buttons_state & cwiid.BTN_PLUS):
+            #         print("BUTTON_PLUS")
+            #     if (buttons_state & cwiid.BTN_MINUS):
+            #         print("BUTTON_MINUS")
+
+            #     if (buttons_state & cwiid.BTN_HOME):
+            #         print("BUTTON_HOME")
+
+            #     if (classic_buttons_state & cwiid.BTN_UP):
+            #         print("BUTTON_UP")
+            #     if (classic_buttons_state & cwiid.BTN_DOWN):
+            #         print("BUTTON_DOWN")
+            #     if (classic_buttons_state & cwiid.BTN_LEFT):
+            #         print("BUTTON_LEFT")
+            #     if (classic_buttons_state & cwiid.BTN_RIGHT):
+            #         print("BUTTON_RIGHT")
+
             classic_buttons_state = self.wiimote.get_classic_buttons()
-            if buttons_state is not None:
-                if (buttons_state & cwiid.BTN_A):
-                    print("BUTTON_A")
-                if (buttons_state & cwiid.BTN_B):
-                    print("BUTTON_B")
-
-                if (buttons_state & cwiid.BTN_1):
-                    print("BUTTON_1")
-                if (buttons_state & cwiid.BTN_2):
-                    print("BUTTON_2")
-
-                if (buttons_state & cwiid.BTN_PLUS):
-                    print("BUTTON_PLUS")
-                if (buttons_state & cwiid.BTN_MINUS):
-                    print("BUTTON_MINUS")
-
-                if (buttons_state & cwiid.BTN_HOME):
-                    print("BUTTON_HOME")
-
-                if (classic_buttons_state & cwiid.BTN_UP):
-                    print("BUTTON_UP")
-                if (classic_buttons_state & cwiid.BTN_DOWN):
-                    print("BUTTON_DOWN")
-                if (classic_buttons_state & cwiid.BTN_LEFT):
-                    print("BUTTON_LEFT")
-                if (classic_buttons_state & cwiid.BTN_RIGHT):
-                    print("BUTTON_RIGHT")
-
             if classic_buttons_state is not None:
                 if (classic_buttons_state & cwiid.CLASSIC_BTN_UP):
                     print("KEY_UP")
@@ -89,8 +90,16 @@ class calibration:
 
                 if (classic_buttons_state & cwiid.CLASSIC_BTN_PLUS):
                     print("KEY_PLUS")
+                    if self.mode == self.mode_left:
+                        self.core_module.left_servo.adjust_range(adjust_value)
+                    if self.mode == self.mode_right:
+                        self.core_module.right_servo.adjust_range(adjust_value)
                 if (classic_buttons_state & cwiid.CLASSIC_BTN_MINUS):
                     print("KEY_MINUS")
+                    if self.mode == self.mode_left:
+                        self.core_module.left_servo.adjust_range(-adjust_value)
+                    if self.mode == self.mode_right:
+                        self.core_module.right_servo.adjust_range(-adjust_value)
 
                 if (classic_buttons_state & cwiid.CLASSIC_BTN_HOME):
                     print("KEY_HOME")
@@ -102,7 +111,7 @@ class calibration:
 
 if __name__ == "__main__":
     core = core.Core()
-    calibration = calibration(core)
+    calibration = Calibration(core)
     try:
         calibration.run_auto()
     except (KeyboardInterrupt) as e:
