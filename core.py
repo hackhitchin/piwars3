@@ -1,7 +1,7 @@
 from __future__ import division
 # import logging
 import servo_control
-import arduino
+# import arduino
 import sensor
 
 # Minimum and maximum theoretical pulse widths. Ignore reversing here
