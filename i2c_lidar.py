@@ -12,6 +12,7 @@ def xshut(gpios):
         and brings each one to 0 volts (low) """
     for x in gpios:
         RPIO.setup(x, RPIO.OUT, initial = 0)
+    time.sleep(0.5)
 
 # Turn on a specific device
 def create(gpio, addr):
@@ -24,8 +25,8 @@ def create(gpio, addr):
 
         Don't set the address to 0x29 if there are any more devices to do. Chaos
         will ensue. """
-    RPIO.setup(gpio, RPIO.IN)        # Unreset the pin
-    time.sleep(0.002)                # Wait for chip to wake
+    RPIO.output(gpio, 1)           # Set the pin high
+    time.sleep(0.2)                # Wait for chip to wake
 
     # Create a VL53L0X object
     tof = VL53L0X.VL53L0X(address = addr)

@@ -28,9 +28,9 @@
 
 import PID
 import time
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import numpy as np
-from scipy.interpolate import spline
+#from scipy.interpolate import spline
 
 def test_pid(P = 0.2,  I = 0.0, D= 0.0, L=100):
     """Self-test PID class
@@ -63,15 +63,18 @@ def test_pid(P = 0.2,  I = 0.0, D= 0.0, L=100):
         pid.update(feedback)
         output = pid.output
         if pid.SetPoint > 0:
-            feedback += (output - (1/i))
-        if i>9:
+            feedback += (output)
+        if i==9:
             pid.SetPoint = 1
+        if i>20:
+            pid.SetPoint += 0.1
+
         time.sleep(0.02)
 
         feedback_list.append(feedback)
         setpoint_list.append(pid.SetPoint)
         time_list.append(i)
-
+    """ this is a multiline comment
     time_sm = np.array(time_list)
     time_smooth = np.linspace(time_sm.min(), time_sm.max(), 300)
     feedback_smooth = spline(time_list, feedback_list, time_smooth)
@@ -88,7 +91,12 @@ def test_pid(P = 0.2,  I = 0.0, D= 0.0, L=100):
 
     plt.grid(True)
     plt.show()
+    """
+
+    for i in range(1,END-1):
+        print("%f, %f" % (feedback_list[i], setpoint_list[i]) )
 
 if __name__ == "__main__":
-    test_pid(1.2, 1, 0.001, L=50)
+    test_pid(0.2, 0.1, 0.01, L=50)
+#    test_pid(1.2, 1, 0.001, L=50)
 #    test_pid(0.8, L=50)

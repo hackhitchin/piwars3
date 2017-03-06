@@ -15,9 +15,11 @@ class WallFollower:
         self.core = core_module
         self.ticks = 0
         self.tick_time = 0.1 # How many seconds per control loop
-        self.time_limit = 10 # How many seconds to run for
+        self.time_limit = 3 # How many seconds to run for
 
-        self.pidc = PID.PID(0.2, 0.0, 0.05)
+#known good for straight line, underdamped
+#        self.pidc = PID.PID(0.5, 0.0, 0.2)
+        self.pidc = PID.PID(0.5, 0.0, 0.2)
 
     def stop(self):
         """Simple method to stop the RC loop"""
@@ -32,14 +34,21 @@ class WallFollower:
         rightspeed = 0
 
         if self.control_mode == "LINEAR":
-            speed_mid = 0.3
-            speed_range = 0.3            
+            speed_mid = -0.2
+            speed_range = 0.06
             """ Deviation is distance from intended midpoint.
                 Right is positive, left is negative
                 Rate is how much to add/subtract from motor speed """
 
-            distance_midpoint = 10
-            deviation = (sensorvalue - 10) / 10.0  # [-1, 1]
+            distance_midpoint = 200.0  # mm
+            distance_range = 100.0  # mm
+            deviation = (sensorvalue - distance_midpoint) / distance_range  # [-1, 1]
+
+            # Gate value to [-1,1] for the sake of not driving backwards
+            if (deviation < -1):
+                deviation = -1
+            if (deviation > 1):
+                deviation = 1
 
             leftspeed = (speed_mid - (deviation * speed_range))
             rightspeed = (speed_mid + (deviation * speed_range))
@@ -47,11 +56,12 @@ class WallFollower:
             return leftspeed, rightspeed
 
         elif self.control_mode == "EXPO":
-            speed_mid = 0.3
-            speed_range = 0.3
+            speed_mid = 0.05
+            speed_range = 0.05
 
-            distance_midpoint = 10
-            deviation = (sensorvalue - distance_midpoint) / 10.0  # [-1, 1]
+            distance_midpoint = 200.0  # mm
+            distance_range = 100.0  # mm
+            deviation = (sensorvalue - distance_midpoint) / distance_range  # [-1, 1]
 
             if (deviation < 0):
                 deviation = 0 - (deviation * deviation)
@@ -62,19 +72,21 @@ class WallFollower:
             rightspeed = (speed_mid + (deviation * speed_range))
 
         elif self.control_mode == "PID":
-            speed_mid = 0.3
-            speed_range = 0.3
+            speed_mid = -0.2
+            speed_range = -0.2
 
-            distance_midpoint = 10
+            distance_midpoint = 200.0
+            distance_range = 150.0
             error = (sensorvalue - distance_midpoint)
             self.pidc.update(error)
 
-            deviation = self.pidc.output
+            deviation = self.pidc.output / distance_range
+            c_deviation = max( -1.0, min(1.0, deviation)) 
 
             print("PID out: %f" % deviation)
 
-            leftspeed = (speed_mid - (deviation * speed_range))
-            rightspeed = (speed_mid + (deviation * speed_range))
+            leftspeed = (speed_mid - (c_deviation * speed_range))
+            rightspeed = (speed_mid + (c_deviation * speed_range))
 
         else:
             leftspeed = speed_mid
@@ -83,6 +95,7 @@ class WallFollower:
         return leftspeed, rightspeed
 
     def run(self):
+        print("Start run")
         """Read a sensor and set motor speeds accordingly"""
         self.core.enable_motors(True)
 
@@ -90,8 +103,11 @@ class WallFollower:
 
         self.set_control_mode("PID")
 
-        while not self.killed and self.ticks < tick_limit:
+        prox = 0
+
+        while not self.killed and self.ticks < tick_limit and prox != -1:
             prox = self.core.read_sensor()
+            print("Distance is %d" % (prox) )
             leftspeed = 0
             rightspeed = 0
 
