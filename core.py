@@ -1,20 +1,7 @@
 from __future__ import division
-# import logging
 import servo_control
-import arduino
+# import arduino
 import sensor
-
-# Minimum and maximum theoretical pulse widths. Ignore reversing here
-# ESC "DB1" midpoint is about 1440
-# ESC "DB2" midpoint is 1500
-LEFT_MIN = 940
-RIGHT_MIN = 1000
-
-LEFT_MID = 1440
-RIGHT_MID = 1500
-
-LEFT_MAX = 1940
-RIGHT_MAX = 2000
 
 
 class Core():
@@ -24,14 +11,37 @@ class Core():
 
     def __init__(self):
         """ Constructor """
+
+        # Minimum and maximum theoretical pulse widths. Ignore reversing here
+        # ESC "DB1" midpoint is about 1440
+        # ESC "DB2" midpoint is 1500
+        self.LEFT_MIN = 940
+        self.LEFT_MID = 1440
+        self.LEFT_MAX = 1940
+
+        self.RIGHT_MIN = 1000
+        self.RIGHT_MID = 1500
+        self.RIGHT_MAX = 2000
+
+        self.LEFT_AUX_1_MIN = 940
+        self.LEFT_AUX_1_MID = 1440
+        self.LEFT_AUX_1_MAX = 1940
+
+        self.RIGHT_AUX_1_MIN = 1000
+        self.RIGHT_AUX_1_MID = 1500
+        self.RIGHT_AUX_1_MAX = 2000
+
         self.left_servo = servo_control.Servo_Controller(
-            LEFT_MIN, LEFT_MID, LEFT_MAX, True)
+            self.LEFT_MIN, self.LEFT_MID, self.LEFT_MAX, True)
         self.right_servo = servo_control.Servo_Controller(
-            RIGHT_MIN, RIGHT_MID, RIGHT_MAX, False)
-        self.left_channel = 1
-        self.right_channel = 2
+            self.RIGHT_MIN, self.RIGHT_MID, self.RIGHT_MAX, False)
+
+        # self.left_channel = 1
+        # self.right_channel = 2
+
         # Proximity sensor: roughly cm from closest measurable point
         self.prox = sensor.Sensor(0, 450, 20, 0)
+
         # self.arduino = arduino.Arduino()
         self.arduino = None
 
@@ -76,7 +86,7 @@ class Core():
     def set_neutral(self):
         """ Send neutral to the motors IMEDIATELY. """
         if self.arduino:
-            self.arduino.direct_micros(LEFT_MID, RIGHT_MID)
+            self.arduino.direct_micros(self.LEFT_MID, self.RIGHT_MID)
 
     def read_sensor(self):
         """ Read a sensor value and return it. """

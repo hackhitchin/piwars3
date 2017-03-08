@@ -9,12 +9,16 @@ import RPi.GPIO as GPIO
 
 import core
 import rc
+import Calibration
+
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
 
 class launcher:
     def __init__(self):
+
+        self.reading_calibration = True
 
         # Initialise wiimote, will be created at beginning of loop.
         self.wiimote = None
@@ -33,10 +37,12 @@ class launcher:
         self.killed = False
 
         # WiiMote LED counter to indicate mode
+        # NOTE: the int value will be shown as binary on the wiimote.
         self.MODE_NONE = 1
         self.MODE_RC = 2
         self.MODE_WALL = 3
         self.MODE_MAZE = 4
+        self.MODE_CALIBRATION = 5
 
     def stop_threads(self):
         """ Single point of call to stop any RC or Challenge Threads """
@@ -56,8 +62,57 @@ class launcher:
         # Safety setting
         self.core.enable_motors(False)
 
+    def read_config(self):
+        # Read the config file when starting up.
+        if self.reading_calibration:
+            calibration = Calibration(core)
+            calibration.read_config()
+
+    def start_rc_mode(self):
+        # Kill any previous Challenge / RC mode
+        self.stop_threads()
+
+        # Set Wiimote LED to RC Mode index
+        if self.wiimote and self.wiimote.wm:
+            self.wiimote.wm.led = self.MODE_RC
+
+        # Inform user we are about to start RC mode
+        logging.info("Entering into RC Mode")
+        self.challenge = rc.rc(self.core, self.wiimote)
+
+        # Create and start a new thread
+        # running the remote control script
+        logging.info("Starting RC Thread")
+        self.challenge_thread = threading.Thread(
+            target=self.challenge.run)
+        self.challenge_thread.start()
+        logging.info("RC Thread Running")
+
+    def start_calibration_mode(self):
+        # Kill any previous Challenge / RC mode
+        self.stop_threads()
+
+        # Set Wiimote LED to RC Mode index
+        if self.wiimote and self.wiimote.wm:
+            self.wiimote.wm.led = self.MODE_CALIBRATION
+
+        # Inform user we are about to start RC mode
+        logging.info("Entering into Calibration Mode")
+        self.challenge = \
+            Calibration.Calibration(self.core, self.wiimote)
+
+        # Create and start a new thread
+        # running the remote control script
+        logging.info("Starting Calibration Thread")
+        self.challenge_thread = threading.Thread(
+            target=self.challenge.run)
+        self.challenge_thread.start()
+        logging.info("Calibration Thread Running")
+
     def run(self):
         """ Main Running loop controling bot mode and menu state """
+        self.read_config()
+
         # Never stop looking for wiimote.
         while not self.killed:
             self.wiimote = None
@@ -76,41 +131,12 @@ class launcher:
                 buttons_state = self.wiimote.get_buttons()
                 classic_buttons_state = self.wiimote.get_classic_buttons()
 
-                # try:
-                #    nunchuk_buttons_state = self.wiimote.get_nunchuk_buttons()
-                #    if (nunchuk_buttons_state & cwiid.NUNCHUK_BTN_Z):
-                #        print("BUTTON_Z")
-                # except:
-                #    print("Failed to get Nunchuck")
-
-                # Show joystick state
-                # try:
-                #     joystick_state = self.wiimote.get_joystick_state()
-                #     if joystick_state:
-                #         print("joystick_state: {0}".format(joystick_state))
-                # except:
-                #     print("Failed to get Joystick")
-
                 if buttons_state is not None:
                     if (buttons_state & cwiid.BTN_A):
-                        # Kill any previous Challenge / RC mode
-                        self.stop_threads()
+                        self.start_rc_mode()
 
-                        # Set Wiimote LED to RC Mode index
-                        if self.wiimote and self.wiimote.wm:
-                            self.wiimote.wm.led = self.MODE_RC
-
-                        # Inform user we are about to start RC mode
-                        logging.info("Entering into RC Mode")
-                        self.challenge = rc.rc(self.core, self.wiimote)
-
-                        # Create and start a new thread
-                        # running the remote control script
-                        logging.info("Starting RC Thread")
-                        self.challenge_thread = threading.Thread(
-                            target=self.challenge.run)
-                        self.challenge_thread.start()
-                        logging.info("RC Thread Running")
+                    if (buttons_state & cwiid.BTN_HOME):
+                        self.start_calibration_mode()
 
                     if (buttons_state & cwiid.BTN_B):
                         # Kill any previous Challenge / RC mode
@@ -126,23 +152,6 @@ class launcher:
                         logging.info("BUTTON_RIGHT")
 
                 if classic_buttons_state is not None:
-                    # if (classic_buttons_state & cwiid.CLASSIC_BTN_UP):
-                    #     print("KEY_UP")
-                    # if (classic_buttons_state & cwiid.CLASSIC_BTN_DOWN):
-                    #     print("KEY_DOWN")
-                    # if (classic_buttons_state & cwiid.CLASSIC_BTN_LEFT):
-                    #     print("KEY_LEFT")
-                    # if (classic_buttons_state & cwiid.CLASSIC_BTN_RIGHT):
-                    #     print("KEY_RIGHT")
-                    # if (classic_buttons_state & cwiid.CLASSIC_BTN_A):
-                    #     print("KEY_A")
-                    # if (classic_buttons_state & cwiid.CLASSIC_BTN_B):
-                    #     print("KEY_B")
-                    # if (classic_buttons_state & cwiid.CLASSIC_BTN_X):
-                    #     print("KEY_X")
-                    # if (classic_buttons_state & cwiid.CLASSIC_BTN_Y):
-                    #     print("KEY_Y")
-
                     if (classic_buttons_state & cwiid.CLASSIC_BTN_ZL or
                             classic_buttons_state & cwiid.CLASSIC_BTN_ZR):
                         # One of the Z buttons pressed, disable
@@ -152,17 +161,6 @@ class launcher:
                         # Neither Z buttons pressed,
                         # allow motors to move freely.
                         self.core.enable_motors(True)
-
-                    # if (classic_buttons_state & cwiid.CLASSIC_BTN_L):
-                    #     print("KEY_L")
-                    # if (classic_buttons_state & cwiid.CLASSIC_BTN_R):
-                    #     print("KEY_R")
-                    # if (classic_buttons_state & cwiid.CLASSIC_BTN_PLUS):
-                    #     print("KEY_PLUS")
-                    # if (classic_buttons_state & cwiid.CLASSIC_BTN_MINUS):
-                    #     print("KEY_MINUS")
-                    # if (classic_buttons_state & cwiid.CLASSIC_BTN_HOME):
-                    #     print("KEY_HOME")
 
                 time.sleep(0.05)
 
