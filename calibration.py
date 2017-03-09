@@ -102,7 +102,7 @@ class Calibration:
 
 if __name__ == "__main__":
     core = core.Core()
-    calibration = calibration(core)
+    calibration = Calibration(core)
     try:
         calibration.run_auto()
     except (KeyboardInterrupt) as e:
