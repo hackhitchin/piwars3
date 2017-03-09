@@ -2,7 +2,7 @@ from __future__ import division
 # import logging
 import servo_control
 import arduino
-#import sensor
+# import sensor
 import i2c_lidar
 from RPIO import PWM
 
