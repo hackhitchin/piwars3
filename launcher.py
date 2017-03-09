@@ -48,6 +48,12 @@ class launcher:
         """ Single point of call to stop any RC or Challenge Threads """
 
         if self.challenge:
+            if (self.wiimote and
+               self.wiimote.wm and
+               self.wiimote.wm.led == self.MODE_CALIBRATION):
+                # Write the config file when exiting the calibration module.
+                self.write_config()
+
             self.challenge.stop()
             self.challenge = None
             self.challenge_thread = None
