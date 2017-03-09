@@ -17,6 +17,8 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 class launcher:
     def __init__(self):
 
+        self.reading_calibration = True
+
         # Initialise wiimote, will be created at beginning of loop.
         self.wiimote = None
         # Instantiate CORE / Chassis module and store in the launcher.
@@ -34,6 +36,7 @@ class launcher:
         self.killed = False
 
         # WiiMote LED counter to indicate mode
+        # NOTE: the int value will be shown as binary on the wiimote.
         self.MODE_NONE = 1
         self.MODE_RC = 2
         self.MODE_WALL = 3
@@ -58,8 +61,13 @@ class launcher:
         # Safety setting
         self.core.enable_motors(False)
 
-    def start_rc_thread(self):
-        """ Start the RC Thread """
+    def read_config(self):
+        # Read the config file when starting up.
+        if self.reading_calibration:
+            calibration = Calibration(core)
+            calibration.read_config()
+
+    def start_rc_mode(self):
         # Kill any previous Challenge / RC mode
         self.stop_threads()
 
@@ -79,8 +87,7 @@ class launcher:
         self.challenge_thread.start()
         logging.info("RC Thread Running")
 
-    def start_calibration_thread(self):
-        """ Start the RC Thread """
+    def start_calibration_mode(self):
         # Kill any previous Challenge / RC mode
         self.stop_threads()
 
@@ -89,20 +96,22 @@ class launcher:
             self.wiimote.wm.led = self.MODE_CALIBRATION
 
         # Inform user we are about to start RC mode
-        logging.info("Entering into RC Mode")
+        logging.info("Entering into Calibration Mode")
         self.challenge = \
             Calibration.Calibration(self.core, self.wiimote)
 
         # Create and start a new thread
         # running the remote control script
-        logging.info("Starting RC Thread")
+        logging.info("Starting Calibration Thread")
         self.challenge_thread = threading.Thread(
             target=self.challenge.run)
         self.challenge_thread.start()
-        logging.info("RC Thread Running")
+        logging.info("Calibration Thread Running")
 
     def run(self):
         """ Main Running loop controling bot mode and menu state """
+        self.read_config()
+
         # Never stop looking for wiimote.
         while not self.killed:
             self.wiimote = None
@@ -123,7 +132,10 @@ class launcher:
 
                 if buttons_state is not None:
                     if (buttons_state & cwiid.BTN_A):
-                        self.start_rc_thread()
+                        self.start_rc_mode()
+
+                    if (buttons_state & cwiid.BTN_HOME):
+                        self.start_calibration_mode()
 
                     if (buttons_state & cwiid.BTN_B):
                         # Kill any previous Challenge / RC mode

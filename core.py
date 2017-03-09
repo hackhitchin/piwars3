@@ -1,14 +1,9 @@
 from __future__ import division
-# import logging
 import servo_control
 import arduino
 # import sensor
 import i2c_lidar
 from RPIO import PWM
-
-# Minimum and maximum theoretical pulse widths. Ignore reversing here
-# ESC "DB1" midpoint is about 1440
-# ESC "DB2" midpoint is 1500
 
 LIDAR_PIN = 4
 LEFT_SERVO_PIN = 17
@@ -23,6 +18,9 @@ class Core():
     def __init__(self):
         """ Constructor """
 
+        # Minimum and maximum theoretical pulse widths. Ignore reversing here
+        # ESC "DB1" midpoint is about 1440
+        # ESC "DB2" midpoint is 1500
         self.LEFT_MIN = 800
         self.LEFT_MID = 1300
         self.LEFT_MAX = 1800
