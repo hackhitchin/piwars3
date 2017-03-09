@@ -9,6 +9,7 @@ import RPi.GPIO as GPIO
 
 import core
 import rc
+import Calibration
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
@@ -37,6 +38,7 @@ class launcher:
         self.MODE_RC = 2
         self.MODE_WALL = 3
         self.MODE_MAZE = 4
+        self.MODE_CALIBRATION = 5
 
     def stop_threads(self):
         """ Single point of call to stop any RC or Challenge Threads """
@@ -55,6 +57,49 @@ class launcher:
 
         # Safety setting
         self.core.enable_motors(False)
+
+    def start_rc_thread(self):
+        """ Start the RC Thread """
+        # Kill any previous Challenge / RC mode
+        self.stop_threads()
+
+        # Set Wiimote LED to RC Mode index
+        if self.wiimote and self.wiimote.wm:
+            self.wiimote.wm.led = self.MODE_RC
+
+        # Inform user we are about to start RC mode
+        logging.info("Entering into RC Mode")
+        self.challenge = rc.rc(self.core, self.wiimote)
+
+        # Create and start a new thread
+        # running the remote control script
+        logging.info("Starting RC Thread")
+        self.challenge_thread = threading.Thread(
+            target=self.challenge.run)
+        self.challenge_thread.start()
+        logging.info("RC Thread Running")
+
+    def start_calibration_thread(self):
+        """ Start the RC Thread """
+        # Kill any previous Challenge / RC mode
+        self.stop_threads()
+
+        # Set Wiimote LED to RC Mode index
+        if self.wiimote and self.wiimote.wm:
+            self.wiimote.wm.led = self.MODE_CALIBRATION
+
+        # Inform user we are about to start RC mode
+        logging.info("Entering into RC Mode")
+        self.challenge = \
+            Calibration.Calibration(self.core, self.wiimote)
+
+        # Create and start a new thread
+        # running the remote control script
+        logging.info("Starting RC Thread")
+        self.challenge_thread = threading.Thread(
+            target=self.challenge.run)
+        self.challenge_thread.start()
+        logging.info("RC Thread Running")
 
     def run(self):
         """ Main Running loop controling bot mode and menu state """
@@ -78,28 +123,14 @@ class launcher:
 
                 if buttons_state is not None:
                     if (buttons_state & cwiid.BTN_A):
-                        # Kill any previous Challenge / RC mode
-                        self.stop_threads()
-
-                        # Set Wiimote LED to RC Mode index
-                        if self.wiimote and self.wiimote.wm:
-                            self.wiimote.wm.led = self.MODE_RC
-
-                        # Inform user we are about to start RC mode
-                        logging.info("Entering into RC Mode")
-                        self.challenge = rc.rc(self.core, self.wiimote)
-
-                        # Create and start a new thread
-                        # running the remote control script
-                        logging.info("Starting RC Thread")
-                        self.challenge_thread = threading.Thread(
-                            target=self.challenge.run)
-                        self.challenge_thread.start()
-                        logging.info("RC Thread Running")
+                        self.start_rc_thread()
 
                     if (buttons_state & cwiid.BTN_B):
                         # Kill any previous Challenge / RC mode
                         self.stop_threads()
+
+                    if (buttons_state & cwiid.BTN_HOME):
+                        self.start_calibration_thread()
 
                     if (buttons_state & cwiid.BTN_UP):
                         logging.info("BUTTON_UP")

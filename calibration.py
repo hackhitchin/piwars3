@@ -3,7 +3,7 @@ import time
 import cwiid
 
 
-class calibration:
+class Calibration:
     def __init__(self, core_module, wm):
         """Class Constructor"""
         self.killed = False
