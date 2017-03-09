@@ -19,6 +19,7 @@ class Calibration:
         self.mode_none = 0
         self.mode_left = 1
         self.mode_right = 2
+
         self.mode_left_aux_1 = 3
         self.mode_right_aux_1 = 4
 
@@ -37,7 +38,6 @@ class Calibration:
         # Loop indefinitely, or until this thread is flagged as stopped.
         while self.wiimote and not self.killed:
             # While in RC mode, get joystick states and pass speeds to motors.
-
             classic_buttons_state = self.wiimote.get_classic_buttons()
             if classic_buttons_state is not None:
                 if (classic_buttons_state & cwiid.CLASSIC_BTN_UP):
@@ -46,6 +46,7 @@ class Calibration:
                 if (classic_buttons_state & cwiid.CLASSIC_BTN_DOWN):
                     print("KEY_DOWN")
                     self.mode = self.mode_right_aux_1
+
                 if (classic_buttons_state & cwiid.CLASSIC_BTN_LEFT):
                     print("KEY_LEFT")
                     self.mode = self.mode_left
