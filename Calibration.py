@@ -91,6 +91,8 @@ class Calibration:
     def read_config(self):
         """ Read the motor defaults from the config file. """
 
+        print("Reading Config")
+
         # Only bother reading if file exists
         if os.path.isfile(self.filename):
             # Get config file
@@ -122,6 +124,7 @@ class Calibration:
                     int(config.get('motors', 'RIGHT_AUX_1_MID'))
                 self.core.RIGHT_AUX_1_MAX = \
                     int(config.get('motors', 'RIGHT_AUX_1_MAX'))
+        print("Finished Reading Config")
 
     def write_config(self):
         """ Read the motor defaults from the config file. """

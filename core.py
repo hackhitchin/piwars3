@@ -2,7 +2,7 @@ from __future__ import division
 import servo_control
 import arduino
 # import sensor
-import i2c_lidar
+# import i2c_lidar
 from RPIO import PWM
 
 LIDAR_PIN = 4
@@ -47,7 +47,11 @@ class Core():
 
         # Proximity sensor: roughly cm from closest measurable point
         # self.tof_left = sensor.Sensor(0, 450, 20, 0)
-        self.PWMservo = PWM.Servo(pulse_incr_us=1)
+        # self.PWMservo = PWM.Servo(pulse_incr_us=1)
+
+        # Always set these to None for initialisation
+        self.PWMservo = None
+        self.arduino = None
 
         self.arduino_mode = 0  # Not using Arduino
 
@@ -55,9 +59,9 @@ class Core():
             self.arduino = arduino.Arduino()
         else:
             self.arduino = None
-            self.PWMservo = PWM.Servo(pulse_incr_us=1)
-            i2c_lidar.xshut([LIDAR_PIN])
-            self.tof_left = i2c_lidar.create(LIDAR_PIN, 0x2a)
+            # self.PWMservo = PWM.Servo(pulse_incr_us=1)
+            # i2c_lidar.xshut([LIDAR_PIN])
+            # self.tof_left = i2c_lidar.create(LIDAR_PIN, 0x2a)
 
     def enable_motors(self, enable):
         """ Called when we want to enable/disable the motors.
@@ -83,10 +87,11 @@ class Core():
         if self.arduino:
             self.arduino.throttle(left_micros, right_micros)
         else:
-            # TODO: make this ramp speeds using RPIO
-            self.PWMservo.set_servo(LEFT_SERVO_PIN, left_micros)
-            self.PWMservo.set_servo(RIGHT_SERVO_PIN, right_micros)
-            print("Set PWM servos to %d, %d" % (left_micros, right_micros))
+            if self.PWMservo:
+                # TODO: make this ramp speeds using RPIO
+                self.PWMservo.set_servo(LEFT_SERVO_PIN, left_micros)
+                self.PWMservo.set_servo(RIGHT_SERVO_PIN, right_micros)
+                print("Set PWM servos to %d, %d" % (left_micros, right_micros))
 
     def direct_speed(self, left_speed, right_speed):
         """ Send motors speed value in range [-1,1]
@@ -102,8 +107,9 @@ class Core():
         if self.arduino:
             self.arduino.direct_micros(left_micros, right_micros)
         else:
-            self.PWMservo.set_servo(LEFT_SERVO_PIN, left_micros)
-            self.PWMservo.set_servo(RIGHT_SERVO_PIN, right_micros)
+            if self.PWMservo:
+                self.PWMservo.set_servo(LEFT_SERVO_PIN, left_micros)
+                self.PWMservo.set_servo(RIGHT_SERVO_PIN, right_micros)
 
     def set_neutral(self):
         """ Send neutral to the motors IMEDIATELY. """
@@ -123,5 +129,6 @@ class Core():
         if self.arduino:
             self.arduino.direct_micros(self.LEFT_MID, self.RIGHT_MID)
         else:
-            self.PWMservo.set_servo(LEFT_SERVO_PIN, self.LEFT_MID)
-            self.PWMservo.set_servo(RIGHT_SERVO_PIN, self.RIGHT_MID)
+            if self.PWMservo:
+                self.PWMservo.set_servo(LEFT_SERVO_PIN, self.LEFT_MID)
+                self.PWMservo.set_servo(RIGHT_SERVO_PIN, self.RIGHT_MID)

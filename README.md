@@ -8,6 +8,9 @@ mkdir Projects
 cd Projects  
 git clone https://github.com/hackhitchin/piwars3.git  
 sudo apt-get install python-cwiid  
+sudo apt-get install python-dev python-setuptools  
+sudo easy_install Pillow  
+sudo easy_install -U RPIO  
 '''
 
 ## Pre-requisites
