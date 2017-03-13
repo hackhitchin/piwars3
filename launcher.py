@@ -18,13 +18,15 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
 class launcher:
     def __init__(self):
+        # 1 = Raspberry Pi but NOT early REV1 board
+        self.i2cbus = SMBus(1)
 
         self.reading_calibration = True
 
         # Initialise wiimote, will be created at beginning of loop.
         self.wiimote = None
         # Instantiate CORE / Chassis module and store in the launcher.
-        self.core = core.Core()
+        self.core = core.Core(self.i2cbus)
 
         GPIO.setwarnings(False)
         self.GPIO = GPIO
@@ -45,8 +47,8 @@ class launcher:
         self.MODE_MAZE = 4
         self.MODE_CALIBRATION = 5
 
-        self.i2cbus = SMBus(1)        # 1 = Raspberry Pi but NOT early REV1 board
-        self.oled = ssd1306(self.i2cbus)   # create oled object, nominating the correct I2C bus, default address
+        # create oled object, nominating the correct I2C bus, default address
+        self.oled = ssd1306(self.i2cbus)
 
     def stop_threads(self):
         """ Single point of call to stop any RC or Challenge Threads """
@@ -74,9 +76,33 @@ class launcher:
 
         # Safety setting
         self.core.enable_motors(False)
+
         # Show state on OLED display
-        self.oled.cls()      # Oled still on, but screen contents now blacked out
-        self.oled.canvas.text((10,10),    'Mode:', fill=1)
+        self.show_mode()
+
+    def show_message(self, message):
+        """ Show state on OLED display """
+        self.oled.cls()  # Clear Screen
+        self.oled.canvas.text((10, 10), message, fill=1)
+        # Now show the mesasge on the screen
+        self.oled.display()
+
+    def show_mode(self):
+        """ Show state on OLED display """
+        self.oled.cls()  # Clear Screen
+        # Show appropriate mode
+        if self.wiimote and self.wiimote.wm:
+            if self.wiimote.wm.led == self.MODE_NONE:
+                self.oled.canvas.text((10, 10), 'Mode:', fill=1)
+            elif self.wiimote.wm.led == self.MODE_RC:
+                self.oled.canvas.text((10, 10), 'Mode: RC', fill=1)
+            elif self.wiimote.wm.led == self.MODE_WALL:
+                self.oled.canvas.text((10, 10), 'Mode: Wall', fill=1)
+            elif self.wiimote.wm.led == self.MODE_MAZE:
+                self.oled.canvas.text((10, 10), 'Mode: Mase', fill=1)
+            elif self.wiimote.wm.led == self.MODE_CALIBRATION:
+                self.oled.canvas.text((10, 10), 'Mode: Calibration', fill=1)
+        # Now show the mesasge on the screen
         self.oled.display()
 
     def read_config(self):
@@ -104,10 +130,9 @@ class launcher:
             target=self.challenge.run)
         self.challenge_thread.start()
         logging.info("RC Thread Running")
+
         # Show state on OLED display
-        self.oled.cls()      # Oled still on, but screen contents now blacked out
-        self.oled.canvas.text((10,10),    'Mode: RC', fill=1)
-        self.oled.display()
+        self.show_mode()
 
     def start_calibration_mode(self):
         # Kill any previous Challenge / RC mode
@@ -129,37 +154,26 @@ class launcher:
             target=self.challenge.run)
         self.challenge_thread.start()
         logging.info("Calibration Thread Running")
+
         # Show state on OLED display
-        self.oled.cls()      # Oled still on, but screen contents now blacked out
-        self.oled.canvas.text((10,10),    'Mode: Calibration', fill=1)
-        self.oled.display()
+        self.show_mode()
 
     def run(self):
         """ Main Running loop controling bot mode and menu state """
         # Show state on OLED display
-        self.oled.cls()      # Oled still on, but screen contents now blacked out
-        self.oled.canvas.text((10,10),    'Booting...', fill=1)
-        self.oled.display()
-
-        self.oled.cls()      # Oled still on, but screen contents now blacked out
-        self.oled.canvas.text((10,10),    'Reading Config...', fill=1)
-        self.oled.display()
-        time.sleep(0.5)
+        self.show_message('Booting...')
 
         # Read config file FIRST
         self.read_config()
 
-        self.oled.cls()      # Oled still on, but screen contents now blacked out
-        self.oled.canvas.text((10,10),    'Initialising Bluetooth...', fill=1)
-        self.oled.display()
-        time.sleep(0.5)
+        self.show_message('Initialising Bluetooth...')
 
         # Never stop looking for wiimote.
         while not self.killed:
             # Show state on OLED display
-            self.oled.cls()      # Oled still on, but screen contents now blacked out
-            self.oled.canvas.text((10,10),    'Waiting for WiiMote...', fill=1)
-            self.oled.canvas.text((10,30),    '***Press 1+2 now ***', fill=1)
+            self.oled.cls()  # Clear screen
+            self.oled.canvas.text((10, 10), 'Waiting for WiiMote...', fill=1)
+            self.oled.canvas.text((10, 30), '***Press 1+2 now ***', fill=1)
             self.oled.display()
 
             self.wiimote = None
@@ -174,9 +188,7 @@ class launcher:
                 self.wiimote.wm.led = self.MODE_NONE
 
             # Show state on OLED display
-            self.oled.cls()      # Oled still on, but screen contents now blacked out
-            self.oled.canvas.text((10,10),    'Mode:', fill=1)
-            self.oled.display()
+            self.show_mode()
 
             # Constantly check wiimote for button presses
             while self.wiimote:
@@ -236,6 +248,4 @@ if __name__ == "__main__":
         launcher.stop_threads()  # This will set neutral for us.
         print("Stopping")
         # Show state on OLED display
-        launcher.oled.cls()      # Oled still on, but screen contents now blacked out
-        launcher.oled.canvas.text((10,10),    'Exited Python Code', fill=1)
-        launcher.oled.display()
+        launcher.show_message('Exited Python Code')
