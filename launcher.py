@@ -100,7 +100,7 @@ class launcher:
         elif self.mode == self.MODE_WALL:
             self.oled.canvas.text((10, 10), 'Mode: Wall', fill=1)
         elif self.mode == self.MODE_MAZE:
-            self.oled.canvas.text((10, 10), 'Mode: Mase', fill=1)
+            self.oled.canvas.text((10, 10), 'Mode: Maze', fill=1)
         elif self.mode == self.MODE_CALIBRATION:
             self.oled.canvas.text((10, 10), 'Mode: Calibration', fill=1)
         # Now show the mesasge on the screen
