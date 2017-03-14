@@ -41,39 +41,27 @@ class Calibration:
         # Loop indefinitely, or until this thread is flagged as stopped.
         while self.wiimote and not self.killed:
 
+            value_adjusted = False
+
             # While in RC mode, get joystick states and pass speeds to motors.
             classic_buttons_state = self.wiimote.get_classic_buttons()
             if classic_buttons_state is not None:
                 if (classic_buttons_state & cwiid.CLASSIC_BTN_UP):
-                    print("KEY_UP")
                     self.mode = self.mode_left_aux_1
+                    value_adjusted = True
                 if (classic_buttons_state & cwiid.CLASSIC_BTN_DOWN):
-                    print("KEY_DOWN")
                     self.mode = self.mode_right_aux_1
+                    value_adjusted = True
 
                 if (classic_buttons_state & cwiid.CLASSIC_BTN_LEFT):
-                    print("KEY_LEFT")
                     self.mode = self.mode_left
+                    value_adjusted = True
                 if (classic_buttons_state & cwiid.CLASSIC_BTN_RIGHT):
-                    print("KEY_RIGHT")
                     self.mode = self.mode_right
-
-                if (classic_buttons_state & cwiid.CLASSIC_BTN_A):
-                    print("KEY_A")
-                if (classic_buttons_state & cwiid.CLASSIC_BTN_B):
-                    print("KEY_B")
-
-                if (classic_buttons_state & cwiid.CLASSIC_BTN_X):
-                    print("KEY_X")
-                if (classic_buttons_state & cwiid.CLASSIC_BTN_Y):
-                    print("KEY_Y")
-                if (classic_buttons_state & cwiid.CLASSIC_BTN_L):
-                    print("KEY_L")
-                if (classic_buttons_state & cwiid.CLASSIC_BTN_R):
-                    print("KEY_R")
+                    value_adjusted = True
 
                 if (classic_buttons_state & cwiid.CLASSIC_BTN_PLUS):
-                    print("KEY_PLUS")
+                    value_adjusted = True
                     if self.mode == self.mode_left:
                         self.core.left_servo.adjust_range(adjust_value)
                     if self.mode == self.mode_right:
@@ -84,7 +72,7 @@ class Calibration:
                         self.core.right_aux_1_servo.adjust_range(adjust_value)
 
                 if (classic_buttons_state & cwiid.CLASSIC_BTN_MINUS):
-                    print("KEY_MINUS")
+                    value_adjusted = True
                     if self.mode == self.mode_left:
                         self.core.left_servo.adjust_range(-adjust_value)
                     if self.mode == self.mode_right:
@@ -94,11 +82,8 @@ class Calibration:
                     if self.mode == self.mode_right_aux_1:
                         self.core.right_aux_1_servo.adjust_range(-adjust_value)
 
-                if (classic_buttons_state & cwiid.CLASSIC_BTN_HOME):
-                    print("KEY_HOME")
-
             # Show current config
-            if self.launcher:
+            if self.launcher and value_adjusted:
                 if self.mode == self.mode_left:
                     self.launcher.show_motor_config(True)
                 elif self.mode == self.mode_right:
