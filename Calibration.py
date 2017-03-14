@@ -94,6 +94,8 @@ class Calibration:
                     self.launcher.show_aux_1_config(False)
                 else:
                     self.launcher.show_mode()
+                # Send motors "stick neutral" so that we can test centre value
+                self.core.throttle(self, 0.0, 0.0)
 
             # Sleep between loops to allow other stuff to
             # happen and not over burden Pi and Arduino.
