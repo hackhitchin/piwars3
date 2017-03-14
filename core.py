@@ -93,9 +93,22 @@ class Core():
         self.RIGHT_AUX_1_MAX = 1800
 
         self.left_servo = servo_control.Servo_Controller(
-            self.LEFT_MIN, self.LEFT_MID, self.LEFT_MAX, True)
+            self.LEFT_MIN,
+            self.LEFT_MID,
+            self.LEFT_MAX, True)
         self.right_servo = servo_control.Servo_Controller(
-            self.RIGHT_MIN, self.RIGHT_MID, self.RIGHT_MAX, False)
+            self.RIGHT_MIN,
+            self.RIGHT_MID,
+            self.RIGHT_MAX, False)
+
+        self.left_aux_1_servo = servo_control.Servo_Controller(
+            self.LEFT_AUX_1_MIN,
+            self.LEFT_AUX_1_MID,
+            self.LEFT_AUX_1_MAX, True)
+        self.right_aux_1_servo = servo_control.Servo_Controller(
+            self.RIGHT_AUX_1_MIN,
+            self.RIGHT_AUX_1_MID,
+            self.RIGHT_AUX_1_MAX, False)
 
         self.left_channel = 1
         self.right_channel = 2

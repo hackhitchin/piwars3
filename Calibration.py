@@ -1,18 +1,21 @@
 import core
 import time
 import cwiid
+import launcher
 
 import os.path
 from ConfigParser import SafeConfigParser
 
 
 class Calibration:
-    def __init__(self, core_module, wm):
+    def __init__(self, core_module, wm, launcher_app):
         """Class Constructor"""
         self.filename = "motors.ini"
         self.killed = False
-        self.core_module = core_module
+        self.core = core_module
         self.wiimote = wm
+        self.launcher = launcher_app
+
         self.ticks = 0
 
         # Define mode enums
@@ -37,6 +40,7 @@ class Calibration:
 
         # Loop indefinitely, or until this thread is flagged as stopped.
         while self.wiimote and not self.killed:
+
             # While in RC mode, get joystick states and pass speeds to motors.
             classic_buttons_state = self.wiimote.get_classic_buttons()
             if classic_buttons_state is not None:
@@ -71,18 +75,40 @@ class Calibration:
                 if (classic_buttons_state & cwiid.CLASSIC_BTN_PLUS):
                     print("KEY_PLUS")
                     if self.mode == self.mode_left:
-                        self.core_module.left_servo.adjust_range(adjust_value)
+                        self.core.left_servo.adjust_range(adjust_value)
                     if self.mode == self.mode_right:
-                        self.core_module.right_servo.adjust_range(adjust_value)
+                        self.core.right_servo.adjust_range(adjust_value)
+                    if self.mode == self.mode_left_aux_1:
+                        self.core.left_aux_1_servo.adjust_range(adjust_value)
+                    if self.mode == self.mode_right_aux_1:
+                        self.core.right_aux_1_servo.adjust_range(adjust_value)
+
                 if (classic_buttons_state & cwiid.CLASSIC_BTN_MINUS):
                     print("KEY_MINUS")
                     if self.mode == self.mode_left:
-                        self.core_module.left_servo.adjust_range(-adjust_value)
+                        self.core.left_servo.adjust_range(-adjust_value)
                     if self.mode == self.mode_right:
-                        self.core_module.right_servo.adjust_range(-adjust_value)
+                        self.core.right_servo.adjust_range(-adjust_value)
+                    if self.mode == self.mode_left_aux_1:
+                        self.core.left_aux_1_servo.adjust_range(-adjust_value)
+                    if self.mode == self.mode_right_aux_1:
+                        self.core.right_aux_1_servo.adjust_range(-adjust_value)
 
                 if (classic_buttons_state & cwiid.CLASSIC_BTN_HOME):
                     print("KEY_HOME")
+
+            # Show current config
+            if self.launcher:
+                if self.mode == self.mode_left:
+                    self.launcher.show_motor_config(True)
+                elif self.mode == self.mode_right:
+                    self.launcher.show_motor_config(False)
+                elif self.mode == self.mode_left_aux_1:
+                    self.launcher.show_aux_1_config(True)
+                elif self.mode == self.mode_right_aux_1:
+                    self.launcher.show_aux_1_config(False)
+                else:
+                    self.launcher.show_mode()
 
             # Sleep between loops to allow other stuff to
             # happen and not over burden Pi and Arduino.

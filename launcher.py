@@ -54,13 +54,10 @@ class launcher:
 
     def stop_threads(self):
         """ Single point of call to stop any RC or Challenge Threads """
-        print("1")
         if self.challenge:
             if (self.mode == self.MODE_CALIBRATION):
                 # Write the config file when exiting the calibration module.
-                print("2")
                 self.challenge.write_config()
-            print("3")
 
             self.challenge.stop()
             self.challenge = None
@@ -68,7 +65,6 @@ class launcher:
             logging.info("Stopping Challenge Thread")
         else:
             logging.info("No Challenge Thread")
-        print("4")
 
         # Reset LED to NO MODE
         self.mode = self.MODE_NONE
@@ -103,6 +99,44 @@ class launcher:
             self.oled.canvas.text((10, 10), 'Mode: Maze', fill=1)
         elif self.mode == self.MODE_CALIBRATION:
             self.oled.canvas.text((10, 10), 'Mode: Calibration', fill=1)
+        # Now show the mesasge on the screen
+        self.oled.display()
+
+    def show_motor_config(self, left):
+        """ Show motor/aux config on OLED display """
+        if left:
+            title = "Left Motor:"
+            message = str(self.core.left_servo.servo_min) + '/'\
+                + str(self.core.left_servo.servo_mid) + '/'\
+                + str(self.core.left_servo.servo_max)
+        else:
+            title = "Right Motor:"
+            message = str(self.core.right_servo.servo_min) + '/'\
+                + str(self.core.right_servo.servo_mid) + '/'\
+                + str(self.core.right_servo.servo_max)
+
+        self.oled.cls()  # Clear Screen
+        self.oled.canvas.text((10, 10), title, fill=1)
+        self.oled.canvas.text((10, 30), message, fill=1)
+        # Now show the mesasge on the screen
+        self.oled.display()
+
+    def show_aux_1_config(self, left):
+        """ Show motor/aux config on OLED display """
+        if left:
+            title = "Left Aux 1:"
+            message = str(self.core.left_aux_1_servo.servo_min) + '/'\
+                + str(self.core.left_aux_1_servo.servo_mid) + '/'\
+                + str(self.core.left_aux_1_servo.servo_max)
+        else:
+            title = "Right Aux 1:"
+            message = str(self.core.right_aux_1_servo.servo_min) + '/'\
+                + str(self.core.right_aux_1_servo.servo_mid) + '/'\
+                + str(self.core.right_aux_1_servo.servo_max)
+
+        self.oled.cls()  # Clear Screen
+        self.oled.canvas.text((10, 10), title, fill=1)
+        self.oled.canvas.text((10, 30), message, fill=1)
         # Now show the mesasge on the screen
         self.oled.display()
 
@@ -191,14 +225,8 @@ class launcher:
             if self.wiimote and self.wiimote.wm:
                 self.wiimote.wm.led = self.mode
 
-            self.show_message('TEST 1')
-            time.sleep(1.0)
-
             # Show state on OLED display
             self.show_mode()
-
-            self.show_message('TEST 2')
-            time.sleep(1.0)
 
             # Constantly check wiimote for button presses
             while self.wiimote:
