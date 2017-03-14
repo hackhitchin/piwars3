@@ -143,7 +143,7 @@ class launcher:
     def read_config(self):
         # Read the config file when starting up.
         if self.reading_calibration:
-            calibration = Calibration.Calibration(self.core, self.wiimote)
+            calibration = Calibration.Calibration(self.core, self.wiimote, self)
             calibration.read_config()
 
     def start_rc_mode(self):
@@ -182,7 +182,7 @@ class launcher:
         # Inform user we are about to start RC mode
         logging.info("Entering into Calibration Mode")
         self.challenge = \
-            Calibration.Calibration(self.core, self.wiimote)
+            Calibration.Calibration(self.core, self.wiimote, self)
 
         # Create and start a new thread
         # running the remote control script
