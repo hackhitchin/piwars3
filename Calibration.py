@@ -128,27 +128,33 @@ class Calibration:
             # Read the motor min/mid/max servo ranges
             if self.core is not None:
                 # Read Wheel motor ESC ranges
-                self.core.LEFT_MIN = int(config.get('motors', 'LEFT_MIN'))
-                self.core.LEFT_MID = int(config.get('motors', 'LEFT_MID'))
-                self.core.LEFT_MAX = int(config.get('motors', 'LEFT_MAX'))
+                self.core.left_servo.servo_min =\
+                    int(config.get('motors', 'LEFT_MIN'))
+                self.core.left_servo.servo_mid =\
+                    int(config.get('motors', 'LEFT_MID'))
+                self.core.left_servo.servo_max =\
+                    int(config.get('motors', 'LEFT_MAX'))
 
-                self.core.RIGHT_MIN = int(config.get('motors', 'RIGHT_MIN'))
-                self.core.RIGHT_MID = int(config.get('motors', 'RIGHT_MID'))
-                self.core.RIGHT_MAX = int(config.get('motors', 'RIGHT_MAX'))
+                self.core.right_servo.servo_min =\
+                    int(config.get('motors', 'RIGHT_MIN'))
+                self.core.right_servo.servo_mid =\
+                    int(config.get('motors', 'RIGHT_MID'))
+                self.core.right_servo.servo_max =\
+                    int(config.get('motors', 'RIGHT_MAX'))
 
                 # Read Auxilery ESC ranges
-                self.core.LEFT_AUX_1_MIN = \
+                self.core.left_aux_1_servo.servo_min = \
                     int(config.get('motors', 'LEFT_AUX_1_MIN'))
-                self.core.LEFT_AUX_1_MID = \
+                self.core.left_aux_1_servo.servo_mid = \
                     int(config.get('motors', 'LEFT_AUX_1_MID'))
-                self.core.LEFT_AUX_1_MAX = \
+                self.core.left_aux_1_servo.servo_max = \
                     int(config.get('motors', 'LEFT_AUX_1_MAX'))
 
-                self.core.RIGHT_AUX_1_MIN = \
+                self.core.right_aux_1_servo.servo_min = \
                     int(config.get('motors', 'RIGHT_AUX_1_MIN'))
-                self.core.RIGHT_AUX_1_MID = \
+                self.core.right_aux_1_servo.servo_mid = \
                     int(config.get('motors', 'RIGHT_AUX_1_MID'))
-                self.core.RIGHT_AUX_1_MAX = \
+                self.core.right_aux_1_servo.servo_max = \
                     int(config.get('motors', 'RIGHT_AUX_1_MAX'))
         print("Finished Reading Config")
 

@@ -285,5 +285,6 @@ if __name__ == "__main__":
         launcher.wiimote = None
         launcher.stop_threads()  # This will set neutral for us.
         print("Stopping")
+        print(str(e))
         # Show state on OLED display
         launcher.show_message('Exited Python Code')

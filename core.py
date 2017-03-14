@@ -104,7 +104,7 @@ class Core():
         self.left_aux_1_servo = servo_control.Servo_Controller(
             self.LEFT_AUX_1_MIN,
             self.LEFT_AUX_1_MID,
-            self.LEFT_AUX_1_MAX, True)
+            self.LEFT_AUX_1_MAX, False)
         self.right_aux_1_servo = servo_control.Servo_Controller(
             self.RIGHT_AUX_1_MIN,
             self.RIGHT_AUX_1_MID,
