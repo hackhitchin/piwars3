@@ -56,9 +56,7 @@ class launcher:
         """ Single point of call to stop any RC or Challenge Threads """
         print("1")
         if self.challenge:
-            if (self.wiimote and
-               self.wiimote.wm and
-               self.wiimote.wm.led == self.MODE_CALIBRATION):
+            if (self.mode == self.MODE_CALIBRATION):
                 # Write the config file when exiting the calibration module.
                 print("2")
                 self.challenge.write_config()
@@ -73,8 +71,9 @@ class launcher:
         print("4")
 
         # Reset LED to NO MODE
+        self.mode = self.MODE_NONE
         if self.wiimote and self.wiimote.wm:
-            self.wiimote.wm.led = self.MODE_NONE
+            self.wiimote.wm.led = self.mode
 
         # Safety setting
         self.core.enable_motors(False)
@@ -94,17 +93,16 @@ class launcher:
         self.oled.cls()  # Clear Screen
         # self.oled.canvas.text((10, 10), 'mode', fill=1)
         # Show appropriate mode
-        if self.wiimote and self.wiimote.wm:
-            if self.wiimote.wm.led == self.MODE_NONE:
-                self.oled.canvas.text((10, 10), 'Mode:', fill=1)
-            elif self.wiimote.wm.led == self.MODE_RC:
-                self.oled.canvas.text((10, 10), 'Mode: RC', fill=1)
-            elif self.wiimote.wm.led == self.MODE_WALL:
-                self.oled.canvas.text((10, 10), 'Mode: Wall', fill=1)
-            elif self.wiimote.wm.led == self.MODE_MAZE:
-                self.oled.canvas.text((10, 10), 'Mode: Mase', fill=1)
-            elif self.wiimote.wm.led == self.MODE_CALIBRATION:
-                self.oled.canvas.text((10, 10), 'Mode: Calibration', fill=1)
+        if self.mode == self.MODE_NONE:
+            self.oled.canvas.text((10, 10), 'Mode:', fill=1)
+        elif self.mode == self.MODE_RC:
+            self.oled.canvas.text((10, 10), 'Mode: RC', fill=1)
+        elif self.mode == self.MODE_WALL:
+            self.oled.canvas.text((10, 10), 'Mode: Wall', fill=1)
+        elif self.mode == self.MODE_MAZE:
+            self.oled.canvas.text((10, 10), 'Mode: Mase', fill=1)
+        elif self.mode == self.MODE_CALIBRATION:
+            self.oled.canvas.text((10, 10), 'Mode: Calibration', fill=1)
         # Now show the mesasge on the screen
         self.oled.display()
 
@@ -119,8 +117,9 @@ class launcher:
         self.stop_threads()
 
         # Set Wiimote LED to RC Mode index
+        self.mode = self.MODE_RC
         if self.wiimote and self.wiimote.wm:
-            self.wiimote.wm.led = self.MODE_RC
+            self.wiimote.wm.led = self.mode
 
         # Inform user we are about to start RC mode
         logging.info("Entering into RC Mode")
@@ -142,8 +141,9 @@ class launcher:
         self.stop_threads()
 
         # Set Wiimote LED to RC Mode index
+        self.mode = self.MODE_CALIBRATION
         if self.wiimote and self.wiimote.wm:
-            self.wiimote.wm.led = self.MODE_CALIBRATION
+            self.wiimote.wm.led = self.mode
 
         # Inform user we are about to start RC mode
         logging.info("Entering into Calibration Mode")
@@ -187,8 +187,9 @@ class launcher:
                 logging.error("Could not connect to wiimote. please try again")
 
             # Reset LED to NO MODE
+            self.mode = self.MODE_NONE
             if self.wiimote and self.wiimote.wm:
-                self.wiimote.wm.led = self.MODE_NONE
+                self.wiimote.wm.led = self.mode
 
             self.show_message('TEST 1')
             time.sleep(1.0)
