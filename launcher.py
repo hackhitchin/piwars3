@@ -47,6 +47,8 @@ class launcher:
         self.MODE_MAZE = 4
         self.MODE_CALIBRATION = 5
 
+        self.mode = self.MODE_NONE
+
         # create oled object, nominating the correct I2C bus, default address
         self.oled = ssd1306(self.i2cbus)
 
@@ -90,6 +92,7 @@ class launcher:
     def show_mode(self):
         """ Show state on OLED display """
         self.oled.cls()  # Clear Screen
+        # self.oled.canvas.text((10, 10), 'mode', fill=1)
         # Show appropriate mode
         if self.wiimote and self.wiimote.wm:
             if self.wiimote.wm.led == self.MODE_NONE:
@@ -187,8 +190,14 @@ class launcher:
             if self.wiimote and self.wiimote.wm:
                 self.wiimote.wm.led = self.MODE_NONE
 
+            self.show_message('TEST 1')
+            time.sleep(1.0)
+
             # Show state on OLED display
             self.show_mode()
+
+            self.show_message('TEST 2')
+            time.sleep(1.0)
 
             # Constantly check wiimote for button presses
             while self.wiimote:

@@ -47,7 +47,7 @@ def i2c_write(address, reg, data_p, length):
 
 
 # Load VL53L0X shared lib
-tof_lib = CDLL("./bin/vl53l0x_python.so")
+tof_lib = CDLL("./VL53L0X_rasp_python/bin/vl53l0x_python.so")
 
 # Create read function pointer
 READFUNC = CFUNCTYPE(c_int, c_ubyte, c_ubyte, POINTER(c_ubyte), c_ubyte)
@@ -101,7 +101,7 @@ class Core():
         self.right_channel = 2
 
         # Proximity sensor: roughly cm from closest measurable point
-        self.tof_left = sensor.Sensor(0, 450, 20, 0)
+        # self.tof_left = sensor.Sensor(0, 450, 20, 0)
         # self.PWMservo = PWM.Servo(pulse_incr_us=1)
 
         # Always set these to None for initialisation
@@ -115,8 +115,8 @@ class Core():
         else:
             self.arduino = None
             # self.PWMservo = PWM.Servo(pulse_incr_us=1)
-            i2c_lidar.xshut([LIDAR_PIN])
-            self.tof_left = i2c_lidar.create(LIDAR_PIN, tof_lib, 0x2a)
+            # i2c_lidar.xshut([LIDAR_PIN])
+            # self.tof_left = i2c_lidar.create(LIDAR_PIN, tof_lib, 0x2a)
 
     def enable_motors(self, enable):
         """ Called when we want to enable/disable the motors.
