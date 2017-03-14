@@ -245,7 +245,7 @@ class launcher:
                         self.stop_threads()
 
                     if (buttons_state & cwiid.BTN_HOME):
-                        self.start_calibration_thread()
+                        self.start_calibration_mode()
 
                     if (buttons_state & cwiid.BTN_UP):
                         logging.info("BUTTON_UP")
