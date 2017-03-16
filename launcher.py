@@ -11,6 +11,8 @@ import core
 import rc
 import Calibration
 from lib_oled96 import ssd1306
+
+import VL53L0X
 from smbus import SMBus
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
@@ -18,15 +20,12 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
 class launcher:
     def __init__(self):
-        # 1 = Raspberry Pi but NOT early REV1 board
-        self.i2cbus = SMBus(1)
-
         self.reading_calibration = True
 
         # Initialise wiimote, will be created at beginning of loop.
         self.wiimote = None
         # Instantiate CORE / Chassis module and store in the launcher.
-        self.core = core.Core(self.i2cbus)
+        self.core = core.Core(VL53L0X.i2cbus)
 
         GPIO.setwarnings(False)
         self.GPIO = GPIO
@@ -50,7 +49,7 @@ class launcher:
         self.mode = self.MODE_NONE
 
         # create oled object, nominating the correct I2C bus, default address
-        self.oled = ssd1306(self.i2cbus)
+        self.oled = ssd1306(VL53L0X.i2cbus)
 
     def stop_threads(self):
         """ Single point of call to stop any RC or Challenge Threads """

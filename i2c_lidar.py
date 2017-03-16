@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import time
-import VL53L0X
+from VL53L0X import VL53L0X
 import RPIO
 
 

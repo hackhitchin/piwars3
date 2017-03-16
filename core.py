@@ -2,7 +2,7 @@ from __future__ import division
 import servo_control
 import arduino
 # import sensor
-import i2c_lidar
+# import i2c_lidar
 # from RPIO import PWM
 from ctypes import *
 
@@ -11,67 +11,13 @@ LEFT_SERVO_PIN = 17
 RIGHT_SERVO_PIN = 27
 
 
-""" Initialisation code for I2C Time Of Flight sensor """
-
-
-def i2c_read(address, reg, data_p, length):
-    """ i2c bus read callback """
-    ret_val = 0
-    result = []
-
-    try:
-        result = i2cbus.read_i2c_block_data(address, reg, length)
-    except IOError:
-        ret_val = -1
-
-    if (ret_val == 0):
-        for index in range(length):
-            data_p[index] = result[index]
-
-    return ret_val
-
-
-def i2c_write(address, reg, data_p, length):
-    """ i2c bus write callback """
-    ret_val = 0
-    data = []
-
-    for index in range(length):
-        data.append(data_p[index])
-    try:
-        i2cbus.write_i2c_block_data(address, reg, data)
-    except IOError:
-        ret_val = -1
-
-    return ret_val
-
-
-# Load VL53L0X shared lib
-tof_lib = CDLL("./VL53L0X_rasp_python/bin/vl53l0x_python.so")
-
-# Create read function pointer
-READFUNC = CFUNCTYPE(c_int, c_ubyte, c_ubyte, POINTER(c_ubyte), c_ubyte)
-read_func = READFUNC(i2c_read)
-
-# Create write function pointer
-WRITEFUNC = CFUNCTYPE(c_int, c_ubyte, c_ubyte, POINTER(c_ubyte), c_ubyte)
-write_func = WRITEFUNC(i2c_write)
-
-# pass i2c read and write function pointers to VL53L0X library
-tof_lib.VL53L0X_set_i2c(read_func, write_func)
-
-
-""" End of initialisation code for I2C Time Of Flight sensor """
-
-
 class Core():
     """ Instantiate a 2WD drivetrain, utilising 2x ESCs,
         controlled using a 2 axis (throttle, steering)
         system + skittle accessories """
 
-    def __init__(self, i2cbus):
+    def __init__(self):
         """ Constructor """
-        self.i2cbus = i2cbus
 
         # Minimum and maximum theoretical pulse widths. Ignore reversing here
         # ESC "DB1" midpoint is about 1440
@@ -129,7 +75,7 @@ class Core():
             self.arduino = None
             # self.PWMservo = PWM.Servo(pulse_incr_us=1)
             # i2c_lidar.xshut([LIDAR_PIN])
-            # self.tof_left = i2c_lidar.create(LIDAR_PIN, tof_lib, 0x2a)
+            # self.tof_left = i2c_lidar.create(LIDAR_PIN, 0x2a)
 
     def enable_motors(self, enable):
         """ Called when we want to enable/disable the motors.
