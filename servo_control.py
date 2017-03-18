@@ -29,3 +29,9 @@ class Servo_Controller():
 
     def set_reverse(self, new_rev):
         self.servo_reversed = new_rev
+
+    def adjust_range(self, adjust_value):
+        """ Increment or decrement entire range by a given value. """
+        self.set_min(self.servo_min + adjust_value)
+        self.set_max(self.servo_max + adjust_value)
+        self.set_mid(self.servo_mid + adjust_value)
