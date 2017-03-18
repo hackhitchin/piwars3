@@ -114,7 +114,7 @@ class launcher:
 
     def get_next_mode(self, mode):
         """ Find the previous menu item """
-        mode_index = self.menu_list.keys().index(self.mode)
+        mode_index = self.menu_list.keys().index(mode)
         next_index = mode_index + 1
         if next_index >= len(self.menu_list):
             next_index = 0  # Wrapped round to end
@@ -122,7 +122,7 @@ class launcher:
 
     def get_previous_mode(self, mode):
         """ Find the previous menu item """
-        mode_index = self.menu_list.keys().index(self.mode)
+        mode_index = self.menu_list.keys().index(mode)
         previous_index = mode_index - 1
         if previous_index < 0:
             previous_index = len(self.menu_list) - 1  # Wrapped round to end

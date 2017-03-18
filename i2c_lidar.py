@@ -5,6 +5,7 @@ import time
 import VL53L0X as VL53L0X_module
 import RPIO
 
+
 def xshut(gpios):
     """ Turn off all VL53L0X devices.
 
@@ -35,6 +36,7 @@ def create(gpio, tof_lib, addr):
     print("lidar enabled")
 
     return tof
+
 
 def turnoff(gpio):
     RPIO.output(gpio, 1)
