@@ -142,20 +142,46 @@ class launcher:
         mode_name_up = self.get_mode_name(previous_mode)
         mode_name_down = self.get_mode_name(next_mode)
 
+        header_y = 0
+        previous_y = 20
+        current_y = 30
+        next_y = 40
+
         # Show list items on LED screen
-        self.oled.canvas.text((10, 0), 'TITO 2: ' + current_mode_name, fill=1)
-        self.oled.canvas.line((0, 9, self.oled.width - 1, 9), fill=0)
-        self.oled.canvas.text((10, 10), 'Mode: ' + mode_name_up, fill=1)
-        self.oled.canvas.text((10, 30), 'Mode: ' + mode_name, fill=1)
-        self.oled.canvas.text((10, 50), 'Mode: ' + mode_name_down, fill=1)
+        self.oled.canvas.text(
+            (10, header_y),
+            'TITO 2: ' + current_mode_name,
+            fill=1)
+        self.oled.canvas.line(
+            (0, 9, self.oled.width - 1, 9),
+            fill=1)
+
+        self.oled.canvas.text(
+            (15, previous_y),
+            'Mode: ' + mode_name_up,
+            fill=1)
+        self.oled.canvas.text(
+            (15, current_y),
+            'Mode: ' + mode_name,
+            fill=1)
+        self.oled.canvas.text(
+            (15, next_y),
+            'Mode: ' + mode_name_down,
+            fill=1)
 
         # 2x triangles indicating menu direction
         self.oled.canvas.polygon(
-            (1, 19, 5, 11, 9, 19, 1, 19),
+            ((1, previous_y + 9),
+             (5, previous_y + 1),
+             (9, previous_y + 9),
+             (1, previous_y + 9)),
             outline=1,
             fill=0)
         self.oled.canvas.polygon(
-            (1, 59, 5, 51, 9, 59, 1, 59),
+            ((1, next_y + 1),
+             (5, next_y + 9),
+             (9, next_y + 1),
+             (1, next_y + 1)),
             outline=1,
             fill=0)
 
