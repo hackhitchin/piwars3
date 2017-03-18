@@ -144,10 +144,7 @@ class launcher:
 
         # Show list items on LED screen
         self.oled.canvas.text((10, 0), 'TITO 2: ' + current_mode_name, fill=1)
-        self.oled.canvas.line(
-            (0, 9, self.oled.width - 1, 9),
-            outline=1,
-            fill=0)
+        self.oled.canvas.line((0, 9, self.oled.width - 1, 9), fill=0)
         self.oled.canvas.text((10, 10), 'Mode: ' + mode_name_up, fill=1)
         self.oled.canvas.text((10, 30), 'Mode: ' + mode_name, fill=1)
         self.oled.canvas.text((10, 50), 'Mode: ' + mode_name_down, fill=1)
