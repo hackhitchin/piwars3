@@ -16,7 +16,7 @@ def xshut(gpios):
     time.sleep(0.5)
 
 
-def create(gpio, addr):
+def create(gpio, tof_lib, addr):
     """ Turn on a specific device (by GPIO pin which its XSHUT port is connected
         to), create a VL53L0X object for it, and start it in constant ranging
         mode.
