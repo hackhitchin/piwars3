@@ -15,7 +15,12 @@ from lib_oled96 import ssd1306
 import VL53L0X
 # from smbus import SMBus  # Commented out as I don't believe its required.
 from enum import Enum
-import OrderedDict
+
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
+# import OrderedDict
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
