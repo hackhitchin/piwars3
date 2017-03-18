@@ -5,7 +5,6 @@ import time
 import VL53L0X as VL53L0X_module
 import RPIO
 
-
 def xshut(gpios):
     """ Turn off all VL53L0X devices.
 
@@ -17,7 +16,7 @@ def xshut(gpios):
     time.sleep(0.5)
 
 
-def create(gpio, tof_lib, addr):
+def create(gpio, addr):
     """ Turn on a specific device (by GPIO pin which its XSHUT port is connected
         to), create a VL53L0X object for it, and start it in constant ranging
         mode.
