@@ -2,8 +2,8 @@ from __future__ import division
 import servo_control
 import arduino
 # import sensor
-# import i2c_lidar
-# from RPIO import PWM
+import i2c_lidar
+from RPIO import PWM
 from ctypes import *
 
 LIDAR_PINS = [18, 15, 14]
@@ -20,7 +20,7 @@ class Core():
         controlled using a 2 axis (throttle, steering)
         system + skittle accessories """
 
-    def __init__(self):
+    def __init__(self, tof_lib):
         """ Constructor """
 
         # Minimum and maximum theoretical pulse widths. Ignore reversing here
@@ -81,7 +81,7 @@ class Core():
             self.PWMservo = PWM.Servo(pulse_incr_us=1)
             for pin in range(0, 3):
                 i2c_lidar.xshut([LIDAR_PINS[pin]])
-                self.lidars.append(i2c_lidar.create(LIDAR_PINS[pin], 0x2a + pin))
+                self.lidars.append(i2c_lidar.create(LIDAR_PINS[pin], tof_lib, 0x2a + pin))
 
     def enable_motors(self, enable):
         """ Called when we want to enable/disable the motors.

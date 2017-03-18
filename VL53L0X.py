@@ -23,7 +23,7 @@
 # SOFTWARE.
 
 # import time
-# import smbus
+import smbus
 from ctypes import *
 
 VL53L0X_GOOD_ACCURACY_MODE = 0   # Good Accuracy mode

@@ -25,7 +25,7 @@ class launcher:
         # Initialise wiimote, will be created at beginning of loop.
         self.wiimote = None
         # Instantiate CORE / Chassis module and store in the launcher.
-        self.core = core.Core(VL53L0X.i2cbus)
+        self.core = core.Core(VL53L0X.tof_lib)
 
         GPIO.setwarnings(False)
         self.GPIO = GPIO
