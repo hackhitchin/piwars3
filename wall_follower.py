@@ -7,6 +7,8 @@ import PID
 ''' 10-2-2017: This code is completely untested; don't be surprised when it 
 doesn't compile, run or do anything sensible.'''
 
+''' 15-3-2017: This code makes a decent stab at driving around
+    the minimal maze, though it sometimes bumps walls '''
 
 class WallFollower:
     def __init__(self, core_module):
@@ -15,11 +17,16 @@ class WallFollower:
         self.core = core_module
         self.ticks = 0
         self.tick_time = 0.1 # How many seconds per control loop
-        self.time_limit = 3 # How many seconds to run for
+        self.time_limit = 16 # How many seconds to run for
+        self.follow_left = True
+        self.switched_wall = False
 
 #known good for straight line, underdamped
 #        self.pidc = PID.PID(0.5, 0.0, 0.2)
-        self.pidc = PID.PID(0.5, 0.0, 0.2)
+
+# test for maze: 
+#        self.pidc = PID.PID(0.5, 0.0, 0.1)
+        self.pidc = PID.PID(0.5, 0.0, 0.1)
 
     def stop(self):
         """Simple method to stop the RC loop"""
@@ -28,7 +35,7 @@ class WallFollower:
     def set_control_mode(self, mode):
         self.control_mode = mode
 
-    def decide_speeds(self, sensorvalue):
+    def decide_speeds(self, sensorvalue, ignore_d):
         """ Set up return values at the start"""
         leftspeed = 0
         rightspeed = 0
@@ -49,9 +56,13 @@ class WallFollower:
                 deviation = -1
             if (deviation > 1):
                 deviation = 1
+            if self.follow_left:
+                leftspeed = (speed_mid - (deviation * speed_range))
+                rightspeed = (speed_mid + (deviation * speed_range))
+            else:
+                leftspeed = (speed_mid + (deviation * speed_range))
+                rightspeed = (speed_mid - (deviation * speed_range))
 
-            leftspeed = (speed_mid - (deviation * speed_range))
-            rightspeed = (speed_mid + (deviation * speed_range))
 
             return leftspeed, rightspeed
 
@@ -72,25 +83,33 @@ class WallFollower:
             rightspeed = (speed_mid + (deviation * speed_range))
 
         elif self.control_mode == "PID":
-            speed_mid = -0.2
+# straight line, cautious: mid -0.2, range -0.2
+# maze, cautious: mid -0.1, range -0.2
+# maze, tuned: mid -0.14, range -0.2
+
+            speed_mid = -0.14
             speed_range = -0.2
 
             distance_midpoint = 200.0
             distance_range = 150.0
             error = (sensorvalue - distance_midpoint)
-            self.pidc.update(error)
+            self.pidc.update(error, ignore_d)
 
             deviation = self.pidc.output / distance_range
             c_deviation = max( -1.0, min(1.0, deviation)) 
 
             print("PID out: %f" % deviation)
 
-            leftspeed = (speed_mid - (c_deviation * speed_range))
-            rightspeed = (speed_mid + (c_deviation * speed_range))
+            if self.follow_left:
+                leftspeed = (speed_mid - (c_deviation * speed_range))
+                rightspeed = (speed_mid + (c_deviation * speed_range))
+            else:
+                leftspeed = (speed_mid + (c_deviation * speed_range))
+                rightspeed = (speed_mid - (c_deviation * speed_range))
 
         else:
             leftspeed = speed_mid
-            leftspeed = speed_mid
+            rightspeed = speed_mid
 
         return leftspeed, rightspeed
 
@@ -103,18 +122,41 @@ class WallFollower:
 
         self.set_control_mode("PID")
 
-        prox = 0
+        side_prox = 0
+        prev_prox = 100 # Make sure nothing bad happens on startup
 
-        while not self.killed and self.ticks < tick_limit and prox != -1:
-            prox = self.core.read_sensor()
-            print("Distance is %d" % (prox) )
+        while not self.killed and self.ticks < tick_limit and side_prox != -1:
+            prev_prox = side_prox
+            d_left = self.core.read_sensor(0)
+            d_front = self.core.read_sensor(1) - 150
+            d_right = self.core.read_sensor(2)
+
+            # Which wall are we following?
+            if self.follow_left:
+                side_prox = d_left # 0:Left, 2: right
+            else:
+                side_prox = d_right
+            front_prox = d_front
+
+            # Have we fallen out of the end of the course?
+            if d_left > 400 and d_right > 400:
+                self.killed = True
+                break
+
+            print("Distance is %d" % (side_prox) )
+
+            ignore_d = False
+            # Have we crossed over the middle of the course?
+            if side_prox > 350 and (side_prox-100 > prev_prox) and self.switched_wall == False:
+                print("Distance above threshold, follow right")
+                self.follow_left = False
+                self.switched_wall = True
+                # Tell PID not to wig out too much
+                ignore_d = True
             leftspeed = 0
             rightspeed = 0
 
-            # sensor measures distance to left wall (0 - 20cm)
-            # so lower sensor value means more left motor needed
-
-            leftspeed, rightspeed = self.decide_speeds(prox)
+            leftspeed, rightspeed = self.decide_speeds(min(side_prox, front_prox), ignore_d)
 
             self.core.throttle(leftspeed, rightspeed)
             print("Motors %f, %f" % (leftspeed, rightspeed))
@@ -123,6 +165,8 @@ class WallFollower:
             time.sleep(0.1)
 
         print("Ticks %d" % self.ticks)
+
+        self.core.stop()
 
 
 if __name__ == "__main__":

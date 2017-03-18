@@ -18,7 +18,11 @@ RIGHT_MID = 1300
 LEFT_MAX = 1800
 RIGHT_MAX = 1800
 
-LIDAR_PIN = 4
+LIDAR_PINS = [18, 15, 14]
+LIDAR_LEFT = 0
+LIDAR_FRONT = 1
+LIDAR_RIGHT = 2
+
 LEFT_SERVO_PIN = 17
 RIGHT_SERVO_PIN = 27
 
@@ -40,14 +44,16 @@ class Core():
         self.PWMservo = PWM.Servo(pulse_incr_us=1)
 
         self.arduino_mode = 0  # Not using Arduino
+        self.lidars = []
 
         if (self.arduino_mode == 1):
             self.arduino = arduino.Arduino()
         else:
             self.arduino = None
             self.PWMservo = PWM.Servo(pulse_incr_us=1)
-            i2c_lidar.xshut([LIDAR_PIN])
-            self.tof_left = i2c_lidar.create(LIDAR_PIN, 0x2a)
+            for pin in range(0, 3):
+                i2c_lidar.xshut([LIDAR_PINS[pin]])
+                self.lidars.append(i2c_lidar.create(LIDAR_PINS[pin], 0x2a + pin))
 
     def enable_motors(self, enable):
         """ Called when we want to enable/disable the motors.
@@ -100,13 +106,13 @@ class Core():
         if self.arduino:
             self.arduino.direct_micros(LEFT_MID, RIGHT_MID)
 
-    def read_sensor(self):
+    def read_sensor(self, pin):
         """ Read a sensor value and return it. """
         if self.arduino:
             sensor_voltage = self.arduino.read_sensor()
             sensor_value = self.prox.translate(sensor_voltage)
         else:
-            sensor_value = self.tof_left.get_distance()
+            sensor_value = self.lidars[pin].get_distance()
         return sensor_value
 
     def stop(self):
@@ -115,3 +121,5 @@ class Core():
         else:
             self.PWMservo.set_servo(LEFT_SERVO_PIN, LEFT_MID)
             self.PWMservo.set_servo(RIGHT_SERVO_PIN, RIGHT_MID)
+            for pin in range(0,3):
+                i2c_lidar.turnoff(LIDAR_PINS[pin])

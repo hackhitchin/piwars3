@@ -61,7 +61,7 @@ class PID:
 
         self.output = 0.0
 
-    def update(self, feedback_value):
+    def update(self, feedback_value, ignore_d = False):
         """Calculates PID value for given reference feedback
 
         .. math::
@@ -89,7 +89,7 @@ class PID:
                 self.ITerm = self.windup_guard
 
             self.DTerm = 0.0
-            if delta_time > 0:
+            if delta_time > 0 and ignore_d == False:
                 self.DTerm = delta_error / delta_time
 
             # Remember last time and last error for next calculation
