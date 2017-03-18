@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import os
 import sys
 import cwiid
 import logging
@@ -27,7 +28,8 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
 class Mode(Enum):
     # Enum class for robot mode/challenge.
-    MODE_NONE = 1
+    MODE_NONE = 0
+    MODE_POWER = 1
     MODE_RC = 2
     MODE_WALL = 3
     MODE_MAZE = 4
@@ -56,14 +58,14 @@ class launcher:
 
         # Mode/Challenge Dictionary
         self.menu_list = OrderedDict((
-            (Mode.MODE_NONE, ""),
+            (Mode.MODE_POWER, "Power Off"),
             (Mode.MODE_RC, "RC"),
             (Mode.MODE_WALL, "Wall"),
             (Mode.MODE_MAZE, "Maze"),
             (Mode.MODE_CALIBRATION, "Calibration")
         ))
         self.current_mode = Mode.MODE_NONE
-        self.menu_mode = Mode.MODE_NONE
+        self.menu_mode = Mode.MODE_RC
 
         # create oled object, nominating the correct I2C bus, default address
         self.oled = ssd1306(VL53L0X.i2cbus)
@@ -190,8 +192,8 @@ class launcher:
 
     def menu_item_pressed(self):
         """ Current menu item pressed. Do something """
-        if self.menu_mode == Mode.MODE_NONE:
-            self.stop_threads()
+        if self.menu_mode == Mode.MODE_POWER:
+            self.power_off()
         elif self.menu_mode == Mode.MODE_RC:
             self.start_rc_mode()
         elif self.menu_mode == Mode.MODE_WALL:
@@ -247,6 +249,18 @@ class launcher:
                 self.wiimote,
                 self)
             calibration.read_config()
+
+    def power_off(self):
+        """ Power down the pi """
+        self.stop_threads()
+
+        self.oled.cls()  # Clear Screen
+        self.oled.canvas.text((10, 10), 'Powering off...', fill=1)
+        # Now show the mesasge on the screen
+        self.oled.display()
+
+        logging.info("Shutting Down Pi")
+        os.system("sudo shutdown -h now")
 
     def start_rc_mode(self):
         # Kill any previous Challenge / RC mode
