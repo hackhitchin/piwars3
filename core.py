@@ -1,26 +1,15 @@
 from __future__ import division
-# import logging
 import servo_control
 import arduino
-import sensor
-import i2c_lidar
-from RPIO import PWM
-
-# Minimum and maximum theoretical pulse widths. Ignore reversing here
-# ESC "DB1" midpoint is about 1440
-# ESC "DB2" midpoint is 1500
-LEFT_MIN = 800
-RIGHT_MIN = 800
-
-LEFT_MID = 1300
-RIGHT_MID = 1300
-
-LEFT_MAX = 1800
-RIGHT_MAX = 1800
+# import sensor
+# import i2c_lidar
+# from RPIO import PWM
+from ctypes import *
 
 LIDAR_PIN = 4
 LEFT_SERVO_PIN = 17
 RIGHT_SERVO_PIN = 27
+
 
 class Core():
     """ Instantiate a 2WD drivetrain, utilising 2x ESCs,
@@ -29,15 +18,54 @@ class Core():
 
     def __init__(self):
         """ Constructor """
+
+        # Minimum and maximum theoretical pulse widths. Ignore reversing here
+        # ESC "DB1" midpoint is about 1440
+        # ESC "DB2" midpoint is 1500
+        self.LEFT_MIN = 800
+        self.LEFT_MID = 1300
+        self.LEFT_MAX = 1800
+
+        self.RIGHT_MIN = 800
+        self.RIGHT_MID = 1300
+        self.RIGHT_MAX = 1800
+
+        self.LEFT_AUX_1_MIN = 800
+        self.LEFT_AUX_1_MID = 1300
+        self.LEFT_AUX_1_MAX = 1800
+
+        self.RIGHT_AUX_1_MIN = 800
+        self.RIGHT_AUX_1_MID = 1300
+        self.RIGHT_AUX_1_MAX = 1800
+
         self.left_servo = servo_control.Servo_Controller(
-            LEFT_MIN, LEFT_MID, LEFT_MAX, True)
+            self.LEFT_MIN,
+            self.LEFT_MID,
+            self.LEFT_MAX, True)
         self.right_servo = servo_control.Servo_Controller(
-            RIGHT_MIN, RIGHT_MID, RIGHT_MAX, False)
+            self.RIGHT_MIN,
+            self.RIGHT_MID,
+            self.RIGHT_MAX, False)
+
+        self.left_aux_1_servo = servo_control.Servo_Controller(
+            self.LEFT_AUX_1_MIN,
+            self.LEFT_AUX_1_MID,
+            self.LEFT_AUX_1_MAX, False)
+        self.right_aux_1_servo = servo_control.Servo_Controller(
+            self.RIGHT_AUX_1_MIN,
+            self.RIGHT_AUX_1_MID,
+            self.RIGHT_AUX_1_MAX, False)
+
         self.left_channel = 1
         self.right_channel = 2
+
         # Proximity sensor: roughly cm from closest measurable point
         # self.tof_left = sensor.Sensor(0, 450, 20, 0)
-        self.PWMservo = PWM.Servo(pulse_incr_us=1)
+        # self.PWMservo = PWM.Servo(pulse_incr_us=1)
+
+        # Always set these to None for initialisation
+        self.PWMservo = None
+        self.arduino = None
 
         self.arduino_mode = 0  # Not using Arduino
 
@@ -45,9 +73,9 @@ class Core():
             self.arduino = arduino.Arduino()
         else:
             self.arduino = None
-            self.PWMservo = PWM.Servo(pulse_incr_us=1)
-            i2c_lidar.xshut([LIDAR_PIN])
-            self.tof_left = i2c_lidar.create(LIDAR_PIN, 0x2a)
+            # self.PWMservo = PWM.Servo(pulse_incr_us=1)
+            # i2c_lidar.xshut([LIDAR_PIN])
+            # self.tof_left = i2c_lidar.create(LIDAR_PIN, 0x2a)
 
     def enable_motors(self, enable):
         """ Called when we want to enable/disable the motors.
@@ -73,10 +101,11 @@ class Core():
         if self.arduino:
             self.arduino.throttle(left_micros, right_micros)
         else:
-            # TODO: make this ramp speeds using RPIO
-            self.PWMservo.set_servo(LEFT_SERVO_PIN, left_micros)
-            self.PWMservo.set_servo(RIGHT_SERVO_PIN, right_micros)
-            print("Set PWM servos to %d, %d" % (left_micros, right_micros) )
+            if self.PWMservo:
+                # TODO: make this ramp speeds using RPIO
+                self.PWMservo.set_servo(LEFT_SERVO_PIN, left_micros)
+                self.PWMservo.set_servo(RIGHT_SERVO_PIN, right_micros)
+                print("Set PWM servos to %d, %d" % (left_micros, right_micros))
 
     def direct_speed(self, left_speed, right_speed):
         """ Send motors speed value in range [-1,1]
@@ -92,13 +121,14 @@ class Core():
         if self.arduino:
             self.arduino.direct_micros(left_micros, right_micros)
         else:
-            self.PWMservo.set_servo(LEFT_SERVO_PIN, left_micros)
-            self.PWMservo.set_servo(RIGHT_SERVO_PIN, right_micros)
+            if self.PWMservo:
+                self.PWMservo.set_servo(LEFT_SERVO_PIN, left_micros)
+                self.PWMservo.set_servo(RIGHT_SERVO_PIN, right_micros)
 
     def set_neutral(self):
         """ Send neutral to the motors IMEDIATELY. """
         if self.arduino:
-            self.arduino.direct_micros(LEFT_MID, RIGHT_MID)
+            self.arduino.direct_micros(self.LEFT_MID, self.RIGHT_MID)
 
     def read_sensor(self):
         """ Read a sensor value and return it. """
@@ -111,7 +141,8 @@ class Core():
 
     def stop(self):
         if self.arduino:
-            self.arduino.direct_micros(LEFT_MID, RIGHT_MID)
+            self.arduino.direct_micros(self.LEFT_MID, self.RIGHT_MID)
         else:
-            self.PWMservo.set_servo(LEFT_SERVO_PIN, LEFT_MID)
-            self.PWMservo.set_servo(RIGHT_SERVO_PIN, RIGHT_MID)
+            if self.PWMservo:
+                self.PWMservo.set_servo(LEFT_SERVO_PIN, self.LEFT_MID)
+                self.PWMservo.set_servo(RIGHT_SERVO_PIN, self.RIGHT_MID)
