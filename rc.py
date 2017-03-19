@@ -26,8 +26,8 @@ class rc:
     def show_motor_speeds(self, left_motor, right_motor):
         """ Show motor/aux config on OLED display """
         if self.oled is not None:
-            message = "[L: " + str(left_motor) +\
-                "] [R: " + str(right_motor) + "]"
+            # Format the speed to 2dp
+            message = "[L: %0.2f] [R: %0.2f]" % (left_motor, right_motor)
 
             self.oled.cls()  # Clear Screen
             self.oled.canvas.text((10, 10), message, fill=1)
@@ -134,6 +134,9 @@ class rc:
             if (nTicksSinceLastMenuUpdate == -1 or
                nTicksSinceLastMenuUpdate >= nTicksBetweenMenuUpdates):
                 self.show_motor_speeds(l_throttle, r_throttle)
+                nTicksSinceLastMenuUpdate = 0
+            else:
+                nTicksSinceLastMenuUpdate = nTicksSinceLastMenuUpdate + 1
 
             # Sleep between loops to allow other stuff to
             # happen and not over burden Pi and Arduino.
