@@ -179,6 +179,13 @@ class launcher:
                 (0, 9, self.oled.width - 1, 9),
                 fill=1)
 
+            # Draw rect around current selection.
+            # NOTE: Has to be done BEFORE text below
+            self.oled.canvas.rectangle(
+                (0, current_y, (self.oled.width - 1) - 10, current_y + 10),
+                outline=1,
+                fill=0)
+
             # show current mode as well as one mode either side
             self.oled.canvas.text(
                 (15, previous_y),
@@ -206,12 +213,6 @@ class launcher:
                  (5, next_y + 9),
                  (9, next_y + 1),
                  (1, next_y + 1)),
-                outline=1,
-                fill=0)
-
-            # Draw rect around current selection
-            self.oled.canvas.rectangle(
-                (0, current_y, (self.oled.width - 1) - 10, 10),
                 outline=1,
                 fill=0)
 
