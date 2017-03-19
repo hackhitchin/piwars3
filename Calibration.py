@@ -1,20 +1,19 @@
 import core
 import time
 import cwiid
-import launcher
-
+from lib_oled96 import ssd1306
 import os.path
 from ConfigParser import SafeConfigParser
 
 
 class Calibration:
-    def __init__(self, core_module, wm, launcher_app):
+    def __init__(self, core_module, wm, oled):
         """Class Constructor"""
         self.filename = "motors.ini"
         self.killed = False
         self.core = core_module
         self.wiimote = wm
-        self.launcher = launcher_app
+        self.oled = oled
 
         self.ticks = 0
 
@@ -28,6 +27,46 @@ class Calibration:
 
         # Default current mode to NONE
         self.mode = self.mode_none
+
+    def show_motor_config(self, left):
+        """ Show motor/aux config on OLED display """
+        if self.oled is not None:
+            if left:
+                title = "Left Motor:"
+                message = str(self.core.left_servo.servo_min) + '/'\
+                    + str(self.core.left_servo.servo_mid) + '/'\
+                    + str(self.core.left_servo.servo_max)
+            else:
+                title = "Right Motor:"
+                message = str(self.core.right_servo.servo_min) + '/'\
+                    + str(self.core.right_servo.servo_mid) + '/'\
+                    + str(self.core.right_servo.servo_max)
+
+            self.oled.cls()  # Clear Screen
+            self.oled.canvas.text((10, 10), title, fill=1)
+            self.oled.canvas.text((10, 30), message, fill=1)
+            # Now show the mesasge on the screen
+            self.oled.display()
+
+    def show_aux_1_config(self, left):
+        """ Show motor/aux config on OLED display """
+        if self.oled is not None:
+            if left:
+                title = "Left Aux 1:"
+                message = str(self.core.left_aux_1_servo.servo_min) + '/'\
+                    + str(self.core.left_aux_1_servo.servo_mid) + '/'\
+                    + str(self.core.left_aux_1_servo.servo_max)
+            else:
+                title = "Right Aux 1:"
+                message = str(self.core.right_aux_1_servo.servo_min) + '/'\
+                    + str(self.core.right_aux_1_servo.servo_mid) + '/'\
+                    + str(self.core.right_aux_1_servo.servo_max)
+
+            self.oled.cls()  # Clear Screen
+            self.oled.canvas.text((10, 10), title, fill=1)
+            self.oled.canvas.text((10, 30), message, fill=1)
+            # Now show the mesasge on the screen
+            self.oled.display()
 
     def stop(self):
         """Simple method to stop the RC loop"""
@@ -83,17 +122,16 @@ class Calibration:
                         self.core.right_aux_1_servo.adjust_range(-adjust_value)
 
             # Show current config
-            if self.launcher and value_adjusted:
+            if value_adjusted:
                 if self.mode == self.mode_left:
-                    self.launcher.show_motor_config(True)
+                    self.show_motor_config(True)
                 elif self.mode == self.mode_right:
-                    self.launcher.show_motor_config(False)
+                    self.show_motor_config(False)
                 elif self.mode == self.mode_left_aux_1:
-                    self.launcher.show_aux_1_config(True)
+                    self.show_aux_1_config(True)
                 elif self.mode == self.mode_right_aux_1:
-                    self.launcher.show_aux_1_config(False)
-                else:
-                    self.launcher.show_mode()
+                    self.show_aux_1_config(False)
+
                 # Send motors "stick neutral" so that we can test centre value
                 self.core.throttle(0.0, 0.0)
 

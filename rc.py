@@ -1,13 +1,16 @@
 import core
 import time
+from lib_oled96 import ssd1306
 
 
 class rc:
-    def __init__(self, core_module, wm):
+    def __init__(self, core_module, wm, oled):
         """Class Constructor"""
         self.killed = False
         self.core_module = core_module
         self.wiimote = wm
+        self.oled = oled
+
         self.ticks = 0
 
         # Store Max joystick values for left/right
@@ -19,6 +22,20 @@ class rc:
         self.r_min_x = -1
         self.r_max_y = -1
         self.r_min_y = -1
+
+    def show_motor_speeds(self):
+        """ Show motor/aux config on OLED display """
+        if self.oled is not None:
+            # Need to get the motor speeds somehow
+            left_motor = 0.0
+            right_motor = 0.0
+            message = "[L: " + str(left_motor) +\
+                "] [R: " + str(right_motor) + "]"
+
+            self.oled.cls()  # Clear Screen
+            self.oled.canvas.text((10, 10), message, fill=1)
+            # Now show the mesasge on the screen
+            self.oled.display()
 
     def stop(self):
         """Simple method to stop the RC loop"""
