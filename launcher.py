@@ -319,8 +319,7 @@ class launcher:
                 classic_buttons_state = self.wiimote.get_classic_buttons()
 
                 if buttons_state is not None:
-                    if (buttons_state &
-                       cwiid.BTN_A &
+                    if (buttons_state & cwiid.BTN_A and
                        self.challenge is not None):
                         # Only works when NOT in a challenge
                         self.menu_item_pressed()
@@ -331,14 +330,13 @@ class launcher:
                         # NOTE: will ALWAYS work
                         self.stop_threads()
 
-                    if (buttons_state &
-                       cwiid.BTN_UP &
+                    if (buttons_state & cwiid.BTN_UP and
                        self.challenge is not None):
                         # Only works when NOT in a challenge
                         self.menu_mode = self.get_previous_mode(self.menu_mode)
                         self.show_menu()
-                    if (buttons_state &
-                       cwiid.BTN_DOWN &
+
+                    if (buttons_state & cwiid.BTN_DOWN and
                        self.challenge is not None):
                         # Only works when NOT in a challenge
                         self.menu_mode = self.get_next_mode(self.menu_mode)
