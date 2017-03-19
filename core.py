@@ -114,7 +114,7 @@ class Core():
                 # TODO: make this ramp speeds using RPIO
                 self.PWMservo.set_servo(LEFT_SERVO_PIN, left_micros)
                 self.PWMservo.set_servo(RIGHT_SERVO_PIN, right_micros)
-                print("Set PWM servos to %d, %d" % (left_micros, right_micros))
+                # print("Set PWM servos to %d, %d" % (left_micros, right_micros))
 
     def direct_speed(self, left_speed, right_speed):
         """ Send motors speed value in range [-1,1]
