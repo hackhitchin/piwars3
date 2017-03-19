@@ -182,7 +182,7 @@ class launcher:
             # Draw rect around current selection.
             # NOTE: Has to be done BEFORE text below
             self.oled.canvas.rectangle(
-                (0, current_y, (self.oled.width - 1) - 10, current_y + 10),
+                (10, current_y, self.oled.width - 1, current_y + 10),
                 outline=1,
                 fill=0)
 
