@@ -109,7 +109,10 @@ class launcher:
 
     def get_mode_name(self, mode):
         """ Return appropriate mode name """
-        return self.menu_list[mode]
+        mode_name = ""
+        if mode != Mode.MODE_NONE:
+            mode_name = self.menu_list[mode]
+        return mode_name
 
     def get_next_mode(self, mode):
         """ Find the previous menu item """
