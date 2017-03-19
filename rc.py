@@ -23,12 +23,9 @@ class rc:
         self.r_max_y = -1
         self.r_min_y = -1
 
-    def show_motor_speeds(self):
+    def show_motor_speeds(self, left_motor, right_motor):
         """ Show motor/aux config on OLED display """
         if self.oled is not None:
-            # Need to get the motor speeds somehow
-            left_motor = 0.0
-            right_motor = 0.0
             message = "[L: " + str(left_motor) +\
                 "] [R: " + str(right_motor) + "]"
 
@@ -102,6 +99,8 @@ class rc:
     def run(self):
         """ Main Challenge method. Has to exist and is the
             start point for the threaded challenge. """
+        nTicksSinceLastMenuUpdate = -1
+        nTicksBetweenMenuUpdates = 10  # 10*0.05 seconds = every half second
 
         # Loop indefinitely, or until this thread is flagged as stopped.
         while self.wiimote and not self.killed:
@@ -113,12 +112,6 @@ class rc:
                     self.wiimote.get_classic_joystick_state(False)
             except:
                 print("Failed to get Joystick")
-
-            # Show Joystick Min/Max raw values for calibration
-            # self.show_joystick_calibration(
-            #     l_joystick_state,
-            #     r_joystick_state
-            # )
 
             # Annotate joystick states to screen
             if l_joystick_state:
@@ -136,6 +129,11 @@ class rc:
             if self.core_module:
                 self.core_module.throttle(l_throttle, r_throttle)
             print ("Motors %f, %f" % (l_throttle, r_throttle))
+
+            # Show motor speeds on LCD
+            if (nTicksSinceLastMenuUpdate == -1 or
+               nTicksSinceLastMenuUpdate >= nTicksBetweenMenuUpdates):
+                self.show_motor_speeds(l_throttle, r_throttle)
 
             # Sleep between loops to allow other stuff to
             # happen and not over burden Pi and Arduino.
