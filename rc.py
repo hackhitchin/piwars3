@@ -114,10 +114,10 @@ class rc:
                 print("Failed to get Joystick")
 
             # Annotate joystick states to screen
-            if l_joystick_state:
-                print("l_joystick_state: {}".format(l_joystick_state))
-            if r_joystick_state:
-                print("r_joystick_state: {}".format(r_joystick_state))
+            # if l_joystick_state:
+            #     print("l_joystick_state: {}".format(l_joystick_state))
+            # if r_joystick_state:
+            #     print("r_joystick_state: {}".format(r_joystick_state))
 
             # Grab normalised x,y / steering,throttle
             # from left and right joysticks.
@@ -128,7 +128,7 @@ class rc:
 
             if self.core_module:
                 self.core_module.throttle(l_throttle, r_throttle)
-            print ("Motors %f, %f" % (l_throttle, r_throttle))
+            print("Motors %0.2f, %0.2f" % (l_throttle, r_throttle))
 
             # Show motor speeds on LCD
             if (nTicksSinceLastMenuUpdate == -1 or
