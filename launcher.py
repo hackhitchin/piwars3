@@ -321,7 +321,7 @@ class launcher:
 
                 if buttons_state is not None:
                     if (buttons_state & cwiid.BTN_A and
-                       self.challenge is not None):
+                       self.challenge is None):
                         # Only works when NOT in a challenge
                         self.menu_item_pressed()
                         self.show_menu()
@@ -332,13 +332,13 @@ class launcher:
                         self.stop_threads()
 
                     if (buttons_state & cwiid.BTN_UP and
-                       self.challenge is not None):
+                       self.challenge is None):
                         # Only works when NOT in a challenge
                         self.menu_mode = self.get_previous_mode(self.menu_mode)
                         self.show_menu()
 
                     if (buttons_state & cwiid.BTN_DOWN and
-                       self.challenge is not None):
+                       self.challenge is None):
                         # Only works when NOT in a challenge
                         self.menu_mode = self.get_next_mode(self.menu_mode)
                         self.show_menu()
