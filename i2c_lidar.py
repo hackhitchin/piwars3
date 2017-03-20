@@ -37,5 +37,6 @@ def create(gpio, tof_lib, addr):
 
     return tof
 
+
 def turnoff(gpio):
     RPIO.output(gpio, 1)

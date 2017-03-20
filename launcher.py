@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import os
 import sys
 import cwiid
 import logging
@@ -13,9 +14,26 @@ import Calibration
 from lib_oled96 import ssd1306
 
 import VL53L0X
-from smbus import SMBus
+# from smbus import SMBus  # Commented out as I don't believe its required.
+from enum import Enum
+
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
+# import OrderedDict
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+
+
+class Mode(Enum):
+    # Enum class for robot mode/challenge.
+    MODE_NONE = 0
+    MODE_POWER = 1
+    MODE_RC = 2
+    MODE_WALL = 3
+    MODE_MAZE = 4
+    MODE_CALIBRATION = 5
 
 
 class launcher:
@@ -38,23 +56,25 @@ class launcher:
 
         self.killed = False
 
-        # WiiMote LED counter to indicate mode
-        # NOTE: the int value will be shown as binary on the wiimote.
-        self.MODE_NONE = 1
-        self.MODE_RC = 2
-        self.MODE_WALL = 3
-        self.MODE_MAZE = 4
-        self.MODE_CALIBRATION = 5
+        # Mode/Challenge Dictionary
+        self.menu_list = OrderedDict((
+            (Mode.MODE_POWER, "Power Off"),
+            (Mode.MODE_RC, "RC"),
+            (Mode.MODE_WALL, "Wall"),
+            (Mode.MODE_MAZE, "Maze"),
+            (Mode.MODE_CALIBRATION, "Calibration")
+        ))
+        self.current_mode = Mode.MODE_NONE
+        self.menu_mode = Mode.MODE_RC
 
-        self.mode = self.MODE_NONE
-
-        # create oled object, nominating the correct I2C bus, default address
+        # Create oled object, nominating the correct I2C bus, default address
+        # Note: Set to None if you need to disable screen
         self.oled = ssd1306(VL53L0X.i2cbus)
 
     def stop_threads(self):
         """ Single point of call to stop any RC or Challenge Threads """
         if self.challenge:
-            if (self.mode == self.MODE_CALIBRATION):
+            if (self.current_mode == Mode.MODE_CALIBRATION):
                 # Write the config file when exiting the calibration module.
                 self.challenge.write_config()
 
@@ -65,98 +85,171 @@ class launcher:
         else:
             logging.info("No Challenge Thread")
 
-        # Reset LED to NO MODE
-        self.mode = self.MODE_NONE
-        if self.wiimote and self.wiimote.wm:
-            self.wiimote.wm.led = self.mode
+        # Reset current mode index
+        self.current_mode = Mode.MODE_NONE
 
         # Safety setting
         self.core.enable_motors(False)
 
         # Show state on OLED display
-        self.show_mode()
+        self.show_menu()
+
+    def menu_item_pressed(self):
+        """ Current menu item pressed. Do something """
+        if self.menu_mode == Mode.MODE_POWER:
+            self.power_off()
+        elif self.menu_mode == Mode.MODE_RC:
+            self.start_rc_mode()
+        elif self.menu_mode == Mode.MODE_WALL:
+            logging.info("Wall Mode")
+        elif self.menu_mode == Mode.MODE_MAZE:
+            logging.info("Maze Mode")
+        elif self.menu_mode == Mode.MODE_CALIBRATION:
+            self.start_calibration_mode()
+
+    def get_mode_name(self, mode):
+        """ Return appropriate mode name """
+        mode_name = ""
+        if mode != Mode.MODE_NONE:
+            mode_name = self.menu_list[mode]
+        return mode_name
+
+    def get_next_mode(self, mode):
+        """ Find the previous menu item """
+        mode_index = self.menu_list.keys().index(mode)
+        next_index = mode_index + 1
+        if next_index >= len(self.menu_list):
+            next_index = 0  # Wrapped round to end
+        return self.menu_list.keys()[next_index]
+
+    def get_previous_mode(self, mode):
+        """ Find the previous menu item """
+        mode_index = self.menu_list.keys().index(mode)
+        previous_index = mode_index - 1
+        if previous_index < 0:
+            previous_index = len(self.menu_list) - 1  # Wrapped round to end
+        return self.menu_list.keys()[previous_index]
 
     def show_message(self, message):
         """ Show state on OLED display """
-        self.oled.cls()  # Clear Screen
-        self.oled.canvas.text((10, 10), message, fill=1)
-        # Now show the mesasge on the screen
-        self.oled.display()
+        if self.oled is not None:
+            self.oled.cls()  # Clear Screen
+            self.oled.canvas.text((10, 10), message, fill=1)
+            # Now show the mesasge on the screen
+            self.oled.display()
 
     def show_mode(self):
-        """ Show state on OLED display """
-        self.oled.cls()  # Clear Screen
-        # self.oled.canvas.text((10, 10), 'mode', fill=1)
-        # Show appropriate mode
-        if self.mode == self.MODE_NONE:
-            self.oled.canvas.text((10, 10), 'Mode:', fill=1)
-        elif self.mode == self.MODE_RC:
-            self.oled.canvas.text((10, 10), 'Mode: RC', fill=1)
-        elif self.mode == self.MODE_WALL:
-            self.oled.canvas.text((10, 10), 'Mode: Wall', fill=1)
-        elif self.mode == self.MODE_MAZE:
-            self.oled.canvas.text((10, 10), 'Mode: Maze', fill=1)
-        elif self.mode == self.MODE_CALIBRATION:
-            self.oled.canvas.text((10, 10), 'Mode: Calibration', fill=1)
-        # Now show the mesasge on the screen
-        self.oled.display()
+        """ Display current menu item. """
+        if self.oled is not None:
+            # Clear Screen
+            self.oled.cls()
+            # Get current mode name and display it.
+            mode_name = self.get_mode_name(self.current_mode)
+            self.oled.canvas.text((10, 10), 'Mode: ' + mode_name, fill=1)
+            # Now show the mesasge on the screen
+            self.oled.display()
 
-    def show_motor_config(self, left):
-        """ Show motor/aux config on OLED display """
-        if left:
-            title = "Left Motor:"
-            message = str(self.core.left_servo.servo_min) + '/'\
-                + str(self.core.left_servo.servo_mid) + '/'\
-                + str(self.core.left_servo.servo_max)
-        else:
-            title = "Right Motor:"
-            message = str(self.core.right_servo.servo_min) + '/'\
-                + str(self.core.right_servo.servo_mid) + '/'\
-                + str(self.core.right_servo.servo_max)
+    def show_menu(self):
+        """ Display menu. """
+        # Clear Screen
+        if self.oled is not None:
+            self.oled.cls()
+            # Get next and previous list items
+            previous_mode = self.get_previous_mode(self.menu_mode)
+            next_mode = self.get_next_mode(self.menu_mode)
 
-        self.oled.cls()  # Clear Screen
-        self.oled.canvas.text((10, 10), title, fill=1)
-        self.oled.canvas.text((10, 30), message, fill=1)
-        # Now show the mesasge on the screen
-        self.oled.display()
+            # Get mode names and display them.
+            current_mode_name = self.get_mode_name(self.current_mode)
+            mode_name = self.get_mode_name(self.menu_mode)
+            mode_name_up = self.get_mode_name(previous_mode)
+            mode_name_down = self.get_mode_name(next_mode)
 
-    def show_aux_1_config(self, left):
-        """ Show motor/aux config on OLED display """
-        if left:
-            title = "Left Aux 1:"
-            message = str(self.core.left_aux_1_servo.servo_min) + '/'\
-                + str(self.core.left_aux_1_servo.servo_mid) + '/'\
-                + str(self.core.left_aux_1_servo.servo_max)
-        else:
-            title = "Right Aux 1:"
-            message = str(self.core.right_aux_1_servo.servo_min) + '/'\
-                + str(self.core.right_aux_1_servo.servo_mid) + '/'\
-                + str(self.core.right_aux_1_servo.servo_max)
+            header_y = 0
+            previous_y = 20
+            current_y = 30
+            next_y = 40
 
-        self.oled.cls()  # Clear Screen
-        self.oled.canvas.text((10, 10), title, fill=1)
-        self.oled.canvas.text((10, 30), message, fill=1)
-        # Now show the mesasge on the screen
-        self.oled.display()
+            # Display Bot name and header information
+            self.oled.canvas.text(
+                (10, header_y),
+                'TITO 2: ' + current_mode_name,
+                fill=1)
+            # Line underneath header
+            self.oled.canvas.line(
+                (0, 9, self.oled.width - 1, 9),
+                fill=1)
+
+            # Draw rect around current selection.
+            # NOTE: Has to be done BEFORE text below
+            self.oled.canvas.rectangle(
+                (10, current_y, self.oled.width - 1, current_y + 10),
+                outline=1,
+                fill=0)
+
+            # show current mode as well as one mode either side
+            self.oled.canvas.text(
+                (15, previous_y),
+                'Mode: ' + mode_name_up,
+                fill=1)
+            self.oled.canvas.text(
+                (15, current_y),
+                'Mode: ' + mode_name,
+                fill=1)
+            self.oled.canvas.text(
+                (15, next_y),
+                'Mode: ' + mode_name_down,
+                fill=1)
+
+            # 2x triangles indicating menu direction
+            self.oled.canvas.polygon(
+                ((1, previous_y + 9),
+                 (5, previous_y + 1),
+                 (9, previous_y + 9),
+                 (1, previous_y + 9)),
+                outline=1,
+                fill=0)
+            self.oled.canvas.polygon(
+                ((1, next_y + 1),
+                 (5, next_y + 9),
+                 (9, next_y + 1),
+                 (1, next_y + 1)),
+                outline=1,
+                fill=0)
+
+            # Now show the mesasge on the screen
+            self.oled.display()
 
     def read_config(self):
         # Read the config file when starting up.
         if self.reading_calibration:
-            calibration = Calibration.Calibration(self.core, self.wiimote, self)
+            calibration = Calibration.Calibration(
+                self.core,
+                self.wiimote,
+                self)
             calibration.read_config()
+
+    def power_off(self):
+        """ Power down the pi """
+        self.stop_threads()
+        if self.oled is not None:
+            self.oled.cls()  # Clear Screen
+            self.oled.canvas.text((10, 10), 'Powering off...', fill=1)
+            # Now show the mesasge on the screen
+            self.oled.display()
+        # Call system OS to shut down the Pi
+        logging.info("Shutting Down Pi")
+        os.system("sudo shutdown -h now")
 
     def start_rc_mode(self):
         # Kill any previous Challenge / RC mode
         self.stop_threads()
 
         # Set Wiimote LED to RC Mode index
-        self.mode = self.MODE_RC
-        if self.wiimote and self.wiimote.wm:
-            self.wiimote.wm.led = self.mode
+        self.current_mode = Mode.MODE_RC
 
         # Inform user we are about to start RC mode
         logging.info("Entering into RC Mode")
-        self.challenge = rc.rc(self.core, self.wiimote)
+        self.challenge = rc.rc(self.core, self.wiimote, self.oled)
 
         # Create and start a new thread
         # running the remote control script
@@ -166,22 +259,17 @@ class launcher:
         self.challenge_thread.start()
         logging.info("RC Thread Running")
 
-        # Show state on OLED display
-        self.show_mode()
-
     def start_calibration_mode(self):
         # Kill any previous Challenge / RC mode
         self.stop_threads()
 
         # Set Wiimote LED to RC Mode index
-        self.mode = self.MODE_CALIBRATION
-        if self.wiimote and self.wiimote.wm:
-            self.wiimote.wm.led = self.mode
+        self.current_mode = Mode.MODE_CALIBRATION
 
         # Inform user we are about to start RC mode
         logging.info("Entering into Calibration Mode")
         self.challenge = \
-            Calibration.Calibration(self.core, self.wiimote, self)
+            Calibration.Calibration(self.core, self.wiimote, self.oled)
 
         # Create and start a new thread
         # running the remote control script
@@ -190,9 +278,6 @@ class launcher:
             target=self.challenge.run)
         self.challenge_thread.start()
         logging.info("Calibration Thread Running")
-
-        # Show state on OLED display
-        self.show_mode()
 
     def run(self):
         """ Main Running loop controling bot mode and menu state """
@@ -206,11 +291,18 @@ class launcher:
 
         # Never stop looking for wiimote.
         while not self.killed:
-            # Show state on OLED display
-            self.oled.cls()  # Clear screen
-            self.oled.canvas.text((10, 10), 'Waiting for WiiMote...', fill=1)
-            self.oled.canvas.text((10, 30), '***Press 1+2 now ***', fill=1)
-            self.oled.display()
+            if self.oled is not None:
+                # Show state on OLED display
+                self.oled.cls()  # Clear screen
+                self.oled.canvas.text(
+                    (10, 10),
+                    'Waiting for WiiMote...',
+                    fill=1)
+                self.oled.canvas.text(
+                    (10, 30),
+                    '***Press 1+2 now ***',
+                    fill=1)
+                self.oled.display()
 
             self.wiimote = None
             try:
@@ -219,13 +311,8 @@ class launcher:
             except WiimoteException:
                 logging.error("Could not connect to wiimote. please try again")
 
-            # Reset LED to NO MODE
-            self.mode = self.MODE_NONE
-            if self.wiimote and self.wiimote.wm:
-                self.wiimote.wm.led = self.mode
-
             # Show state on OLED display
-            self.show_mode()
+            self.show_menu()
 
             # Constantly check wiimote for button presses
             while self.wiimote:
@@ -233,37 +320,40 @@ class launcher:
                 classic_buttons_state = self.wiimote.get_classic_buttons()
 
                 if buttons_state is not None:
-                    if (buttons_state & cwiid.BTN_A):
-                        self.start_rc_mode()
-
-                    if (buttons_state & cwiid.BTN_HOME):
-                        self.start_calibration_mode()
+                    if (buttons_state & cwiid.BTN_A and
+                       self.challenge is None):
+                        # Only works when NOT in a challenge
+                        self.menu_item_pressed()
+                        self.show_menu()
 
                     if (buttons_state & cwiid.BTN_B):
                         # Kill any previous Challenge / RC mode
+                        # NOTE: will ALWAYS work
                         self.stop_threads()
 
-                    if (buttons_state & cwiid.BTN_HOME):
-                        self.start_calibration_mode()
+                    if (buttons_state & cwiid.BTN_UP and
+                       self.challenge is None):
+                        # Only works when NOT in a challenge
+                        self.menu_mode = self.get_previous_mode(self.menu_mode)
+                        self.show_menu()
 
-                    if (buttons_state & cwiid.BTN_UP):
-                        logging.info("BUTTON_UP")
-                    if (buttons_state & cwiid.BTN_DOWN):
-                        logging.info("BUTTON_DOWN")
-                    if (buttons_state & cwiid.BTN_LEFT):
-                        logging.info("BUTTON_LEFT")
-                    if (buttons_state & cwiid.BTN_RIGHT):
-                        logging.info("BUTTON_RIGHT")
+                    if (buttons_state & cwiid.BTN_DOWN and
+                       self.challenge is None):
+                        # Only works when NOT in a challenge
+                        self.menu_mode = self.get_next_mode(self.menu_mode)
+                        self.show_menu()
 
                 if classic_buttons_state is not None:
                     if (classic_buttons_state & cwiid.CLASSIC_BTN_ZL or
                             classic_buttons_state & cwiid.CLASSIC_BTN_ZR):
                         # One of the Z buttons pressed, disable
                         # motors and set neutral.
+                        # NOTE: will ALWAYS work
                         self.core.enable_motors(False)
                     else:
                         # Neither Z buttons pressed,
                         # allow motors to move freely.
+                        # NOTE: will ALWAYS work
                         self.core.enable_motors(True)
 
                 time.sleep(0.05)

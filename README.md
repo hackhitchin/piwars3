@@ -11,6 +11,8 @@ sudo apt-get install python-cwiid
 sudo apt-get install python-dev python-setuptools  
 sudo easy_install Pillow  
 sudo easy_install -U RPIO  
+sudo pip install --upgrade pip enum34  
+sudo pip install ordereddict
 '''
 
 ## Pre-requisites

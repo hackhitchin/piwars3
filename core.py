@@ -3,6 +3,7 @@ import servo_control
 import arduino
 # import sensor
 import i2c_lidar
+
 from RPIO import PWM
 from ctypes import *
 
@@ -81,7 +82,9 @@ class Core():
             self.PWMservo = PWM.Servo(pulse_incr_us=1)
             for pin in range(0, 3):
                 i2c_lidar.xshut([LIDAR_PINS[pin]])
-                self.lidars.append(i2c_lidar.create(LIDAR_PINS[pin], tof_lib, 0x2a + pin))
+                self.lidars.append(
+                    i2c_lidar.create(LIDAR_PINS[pin], tof_lib, 0x2a + pin)
+                )
 
     def enable_motors(self, enable):
         """ Called when we want to enable/disable the motors.
@@ -111,7 +114,7 @@ class Core():
                 # TODO: make this ramp speeds using RPIO
                 self.PWMservo.set_servo(LEFT_SERVO_PIN, left_micros)
                 self.PWMservo.set_servo(RIGHT_SERVO_PIN, right_micros)
-                print("Set PWM servos to %d, %d" % (left_micros, right_micros))
+                # print("Set PWM servos to %d, %d" % (left_micros, right_micros))
 
     def direct_speed(self, left_speed, right_speed):
         """ Send motors speed value in range [-1,1]
@@ -151,5 +154,5 @@ class Core():
         else:
             self.PWMservo.set_servo(LEFT_SERVO_PIN, self.LEFT_MID)
             self.PWMservo.set_servo(RIGHT_SERVO_PIN, self.RIGHT_MID)
-            for pin in range(0,3):
+            for pin in range(0, 3):
                 i2c_lidar.turnoff(LIDAR_PINS[pin])
