@@ -152,8 +152,8 @@ class launcher:
     def show_menu(self):
         """ Display menu. """
         # Display current menu item to prompt for when no OLED attached
-        current_mode_name = self.get_mode_name(self.current_mode)
-        print(current_mode_name)
+        mode_name = self.get_mode_name(self.menu_mode)
+        print(mode_name)
 
         # Clear Screen
         if self.oled is not None:
@@ -163,7 +163,7 @@ class launcher:
             next_mode = self.get_next_mode(self.menu_mode)
 
             # Get mode names and display them.
-            mode_name = self.get_mode_name(self.menu_mode)
+            current_mode_name = self.get_mode_name(self.current_mode)
             mode_name_up = self.get_mode_name(previous_mode)
             mode_name_down = self.get_mode_name(next_mode)
 
