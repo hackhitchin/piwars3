@@ -90,6 +90,8 @@ class Calibration:
             start point for the threaded challenge. """
         adjust_value = 5
 
+        # Sleep a small time to allow screen to refresh in launcher code
+        time.sleep(0.25)
         # Show servo config for current item.
         self.show_servo_config(self.mode)
 
