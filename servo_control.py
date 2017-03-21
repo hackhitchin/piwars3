@@ -4,6 +4,7 @@ from numpy import interp
 class Servo_Controller():
 
     def __init__(self, min, mid, max, bReverse):
+        """ Standard constructor """
         self.servo_min = min
         self.servo_mid = mid
         self.servo_max = max
