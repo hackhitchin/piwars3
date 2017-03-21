@@ -90,6 +90,9 @@ class Calibration:
             start point for the threaded challenge. """
         adjust_value = 5
 
+        # Show servo config for current item.
+        self.show_servo_config(self.mode)
+
         # Loop indefinitely, or until this thread is flagged as stopped.
         while self.wiimote and not self.killed:
 
