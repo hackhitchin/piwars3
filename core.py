@@ -175,7 +175,7 @@ class Core():
             # Need to send 0 speed to motors if neutral selected.
             if left_servo != ServoEnum.SERVO_NONE:
                 self.PWMservo.set_servo(
-                    self.servos[LEFT_MOTOR_ESC][1],
+                    self.servos[left_servo][1],
                     left_mid)
             if right_servo != ServoEnum.SERVO_NONE:
                 self.PWMservo.set_servo(
