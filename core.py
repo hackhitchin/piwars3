@@ -140,10 +140,13 @@ class Core():
         # Calculate microseconds from command speed
         left_micros = 0
         right_micros = 0
-        if left_servo != ServoEnum.SERVO_NONE:
-            left_micros = self.servos[left_servo][0].micros(left_speed)
-        if right_servo != ServoEnum.SERVO_NONE:
-            right_micros = self.servos[right_servo][0].micros(right_speed)
+        try:
+            if left_servo != ServoEnum.SERVO_NONE:
+                left_micros = self.servos[left_servo][0].micros(left_speed)
+            if right_servo != ServoEnum.SERVO_NONE:
+                right_micros = self.servos[right_servo][0].micros(right_speed)
+        except:
+            print("Failed to get servo throttle micros")
 
         # Tell the Arduino to move to that speed (eventually)
         if self.arduino:
@@ -151,36 +154,45 @@ class Core():
         else:
             if self.PWMservo:
                 # TODO: make this ramp speeds using RPIO
-                if left_servo != ServoEnum.SERVO_NONE:
-                    self.PWMservo.set_servo(
-                        self.servos[left_servo][1],
-                        left_micros)
-                if right_servo != ServoEnum.SERVO_NONE:
-                    self.PWMservo.set_servo(
-                        self.servos[right_servo][1],
-                        right_micros)
+                try:
+                    if left_servo != ServoEnum.SERVO_NONE:
+                        self.PWMservo.set_servo(
+                            self.servos[left_servo][1],
+                            left_micros)
+                    if right_servo != ServoEnum.SERVO_NONE:
+                        self.PWMservo.set_servo(
+                            self.servos[right_servo][1],
+                            right_micros)
+                except:
+                    print("Failed to set servo throttle micros")
 
     def set_neutral(self,
                     left_servo=ServoEnum.LEFT_MOTOR_ESC,
                     right_servo=ServoEnum.RIGHT_MOTOR_ESC):
         """ Send neutral to the motors IMEDIATELY. """
-        if left_servo != ServoEnum.SERVO_NONE:
-            left_mid = self.servos[left_servo][0].servo_mid
-        if right_servo != ServoEnum.SERVO_NONE:
-            right_mid = self.servos[right_servo][0].servo_mid
+        try:
+            if left_servo != ServoEnum.SERVO_NONE:
+                left_mid = self.servos[left_servo][0].servo_mid
+            if right_servo != ServoEnum.SERVO_NONE:
+                right_mid = self.servos[right_servo][0].servo_mid
+        except:
+            print("Failed to get servo enum values")
 
         if self.arduino:
             self.arduino.direct_micros(left_mid, right_mid)
         else:
             # Need to send 0 speed to motors if neutral selected.
-            if left_servo != ServoEnum.SERVO_NONE:
-                self.PWMservo.set_servo(
-                    self.servos[left_servo][1],
-                    left_mid)
-            if right_servo != ServoEnum.SERVO_NONE:
-                self.PWMservo.set_servo(
-                    self.servos[right_servo][1],
-                    right_mid)
+            try:
+                if left_servo != ServoEnum.SERVO_NONE:
+                    self.PWMservo.set_servo(
+                        self.servos[left_servo][1],
+                        left_mid)
+                if right_servo != ServoEnum.SERVO_NONE:
+                    self.PWMservo.set_servo(
+                        self.servos[right_servo][1],
+                        right_mid)
+            except:
+                print("Failed to set servo neutral PWM values")
 
     def read_sensor(self, pin):
         """ Read a sensor value and return it. """
