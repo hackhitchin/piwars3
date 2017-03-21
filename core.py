@@ -48,7 +48,7 @@ class Core():
         """ Constructor """
 
         # Create a list of servo's
-        self.servos = []
+        self.servos = dict()
         # Add Motor Servo's. NOTE: Left motor esc is reversed.
         self.servos[ServoEnum.LEFT_MOTOR_ESC] = [
             servo_control.Servo_Controller(
