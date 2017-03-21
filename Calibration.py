@@ -139,16 +139,16 @@ class Calibration:
             if self.core is not None:
                 # Read in min/mid/max of menu items that we can change.
                 for item in self.menu_list.items():
-                    item_enum_str = str(item).split('.')
+                    item_enum_str = str(item[0]).split('.')
                     item_min_str = "{}_MIN".format(item_enum_str[0])
                     item_mid_str = "{}_MID".format(item_enum_str[0])
                     item_max_str = "{}_MAX".format(item_enum_str[0])
                     try:
-                        self.core.servos[item][0].servo_min = \
+                        self.core.servos[item[0]][0].servo_min = \
                             int(config.get('motors', item_min_str))
-                        self.core.servos[item][0].servo_mid = \
+                        self.core.servos[item[0]][0].servo_mid = \
                             int(config.get('motors', item_mid_str))
-                        self.core.servos[item][0].servo_max = \
+                        self.core.servos[item[0]][0].servo_max = \
                             int(config.get('motors', item_max_str))
                     except:
                         print("Failed to read item from ini.")
@@ -173,22 +173,22 @@ class Calibration:
 
         # Write out min/mid/max of menu items that we can change.
         for item in self.menu_list.items():
-            item_enum_str = str(item).split('.')
+            item_enum_str = str(item[0]).split('.')
             item_min_str = "{}_MIN".format(item_enum_str[0])
             item_mid_str = "{}_MID".format(item_enum_str[0])
             item_max_str = "{}_MAX".format(item_enum_str[0])
             config.set(
                 'motors',
                 item_min_str,
-                str(self.core.servos[item][0].servo_min))
+                str(self.core.servos[item[0]][0].servo_min))
             config.set(
                 'motors',
                 item_mid_str,
-                str(self.core.servos[item][0].servo_mid))
+                str(self.core.servos[item[0]][0].servo_mid))
             config.set(
                 'motors',
                 item_max_str,
-                str(self.core.servos[item][0].servo_max))
+                str(self.core.servos[item[0]][0].servo_max))
 
 
 if __name__ == "__main__":
