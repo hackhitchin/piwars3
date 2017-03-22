@@ -1,4 +1,5 @@
-# import core
+import core
+from core import ServoEnum
 import time
 import sys
 # from lib_oled96 import ssd1306
@@ -103,6 +104,17 @@ class rc:
             start point for the threaded challenge. """
         nTicksSinceLastMenuUpdate = -1
         nTicksBetweenMenuUpdates = 10  # 10*0.05 seconds = every half second
+
+        # Grab original motor scale factors
+        left_motor_esc = self.core_module.servos[ServoEnum.LEFT_MOTOR_ESC][0]
+        right_motor_esc = self.core_module.servos[ServoEnum.RIGHT_MOTOR_ESC][0]
+        left_motor_orig_scale_factor = left_motor_esc.scale_factor
+        right_motor_orig_scale_factor = right_motor_esc.scale_factor
+
+        # Change motors to 1/4 speed
+        speed_factor = 0.25
+        left_motor_esc.set_scale_factor(speed_factor)
+        right_motor_esc.set_scale_factor(speed_factor)
 
         # Loop indefinitely, or until this thread is flagged as stopped.
         while self.wiimote and not self.killed:
@@ -221,6 +233,9 @@ class rc:
             # happen and not over burden Pi and Arduino.
             time.sleep(0.05)
 
+        # Reset motors to previous speed
+        left_motor_esc.set_scale_factor(left_motor_orig_scale_factor)
+        right_motor_esc.set_scale_factor(right_motor_orig_scale_factor)
 
 if __name__ == "__main__":
     core = core.Core()
