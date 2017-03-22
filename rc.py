@@ -1,6 +1,7 @@
-import core
+# import core
 import time
-from lib_oled96 import ssd1306
+import sys
+# from lib_oled96 import ssd1306
 
 
 class rc:
@@ -97,6 +98,7 @@ class rc:
         )
 
     def run(self):
+        print(sys.argv)
         """ Main Challenge method. Has to exist and is the
             start point for the threaded challenge. """
         nTicksSinceLastMenuUpdate = -1
@@ -126,14 +128,91 @@ class rc:
             r_joystick_pos = r_joystick_state['state']['normalised']
             r_steering, r_throttle = r_joystick_pos
 
+            # I'm assuming "normalised" means [-1, 1]
+            # If it doesn't we'll have to do some division by self.l_max_x etc.
+
+            self.tank = False
+
+            # How much expo to apply to throttle
+            # 1 = linear response (twitchy)
+            # 3 = very slow in central portion of stick movement
+            # At 2.0, half the stick travel means 25% throttle
+            y_exp = 2.0
+
+            # How much expo to apply to steering input
+            x_exp = 1.5
+
+            # What proportion of full speed to use
+            speed_scale = 1.0
+
+            # What proportion of full steering speed to use at throttle = 0
+            steer_scale = 1.0
+
+            # What proportion of full steering speed to use at full throttle
+            steer_softening = 0.5
+
+            # speed_input and steer_input are expo'd values of stick movement,
+            if( l_throttle >= 0 ):
+                speed_input = pow(l_throttle, y_exp)
+            else:
+                speed_input = 0 - (pow(0-l_throttle, y_exp))
+            speed_input = speed_input * speed_scale
+
+            if( r_steering >= 0 ):
+                steer_input = pow(r_steering, x_exp)
+            else:
+                steer_input = 0 - (pow(0-r_steering, x_exp))
+            steer_input = steer_input * steer_scale
+
+            # Reduce steering input at high speed to avoid crazy behaviour
+            # At throttle=0.0, steering_reduction = 1
+            # At throttle=0.5, steering_reduction = 0.75
+            # At throttle=-0.5, steering_reduction = 0.75 (not -0.75)
+            # At throttle=1.0, steering_reduction = 0.5
+            
+            steering_reduction = (steer_softening * abs(speed_input))
+            steer_input = steer_input * (1-steering_reduction)
+            # Change to -1 if the steering is backwards :)
+            steering_rev = 1.0
+
+            # delta: the difference in throttle between the motors
+            steering_delta = (steer_input * steer_scale) * steering_rev;
+
+            l_motor = speed_input + steering_delta
+            r_motor = speed_input - steering_delta
+
+            # Cap the motor speeds: if one motor speed is above 1.0,
+            # reduce both to maintain steering input
+            if (l_motor > 1):
+                c_r_motor = r_motor - (l_motor - 1)
+                c_l_motor = 1
+            elif (l_motor < -1):
+                c_r_motor = r_motor + (l_motor + 1)
+                c_l_motor = -1
+            else:
+                c_l_motor = l_motor
+
+            if (r_motor > 1):
+                c_l_motor = l_motor - (r_motor - 1)
+                c_r_motor = 1
+            elif (r_motor < -1):
+                c_l_motor = l_motor + (r_motor + 1)
+                c_r_motor = -1
+            else:
+                c_r_motor = r_motor
+
             if self.core_module:
-                self.core_module.throttle(l_throttle, r_throttle)
-            print("Motors %0.2f, %0.2f" % (l_throttle, r_throttle))
+                if self.tank:
+                    self.core_module.throttle(c_l_motor, c_r_motor)
+                else:
+                    self.core_module.throttle(l_throttle, r_throttle)
+
+            print("Motors %0.2f, %0.2f" % (c_l_motor, c_r_motor))
 
             # Show motor speeds on LCD
             if (nTicksSinceLastMenuUpdate == -1 or
                nTicksSinceLastMenuUpdate >= nTicksBetweenMenuUpdates):
-                self.show_motor_speeds(l_throttle, r_throttle)
+                self.show_motor_speeds(c_l_motor, c_r_motor)
                 nTicksSinceLastMenuUpdate = 0
             else:
                 nTicksSinceLastMenuUpdate = nTicksSinceLastMenuUpdate + 1
@@ -145,9 +224,9 @@ class rc:
 
 if __name__ == "__main__":
     core = core.Core()
-    rc = rc(core)
+    rc = rc(core, None, None)
     try:
-        rc.run_auto()
+        rc.run()
     except (KeyboardInterrupt) as e:
         # except (Exception, KeyboardInterrupt) as e:
         # Stop any active threads before leaving
