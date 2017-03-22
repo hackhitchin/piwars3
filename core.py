@@ -55,46 +55,46 @@ class Core():
         # Add Motor Servo's. NOTE: Left motor esc is reversed.
         self.servos[ServoEnum.LEFT_MOTOR_ESC] = [
             servo_control.Servo_Controller(
-                800, 1300, 1800, True  # Min, Mid, Max, Reversed
+                min=800, mid=1300, max=1800, bReverse=True
             ), LEFT_MOTOR_ESC_PIN, 'Left Motor']
         self.servos[ServoEnum.RIGHT_MOTOR_ESC] = [
             servo_control.Servo_Controller(
-                800, 1300, 1800, False  # Min, Mid, Max, Reversed
+                min=800, mid=1300, max=1800, bReverse=False
             ), RIGHT_MOTOR_ESC_PIN, 'Right Motor']
 
         # Add Auxilary servo's. NOTE: Aux esc's are not reversed.
         self.servos[ServoEnum.LEFT_AUX_ESC] = [
             servo_control.Servo_Controller(
-                800, 1300, 1800, False  # Min, Mid, Max, Reversed
+                min=800, mid=1300, max=1800, bReverse=False
             ), LEFT_AUX_ESC_PIN, 'Left Aux']
         self.servos[ServoEnum.RIGHT_AUX_ESC] = [
             servo_control.Servo_Controller(
-                800, 1300, 1800, False  # Min, Mid, Max, Reversed
+                min=800, mid=1300, max=1800, bReverse=False
             ), RIGHT_AUX_ESC_PIN, 'Right Aux']
 
         # Add Auxilary servo's. NOTE: Ball Flinger esc's are not reversed.
         self.servos[ServoEnum.LEFT_FLINGER_ESC] = [
             servo_control.Servo_Controller(
-                800, 1300, 1800, False  # Min, Mid, Max, Reversed
+                min=800, mid=1300, max=1800, bReverse=False
             ), LEFT_FLINGER_ESC_PIN, 'Left Flinger ESC']
         self.servos[ServoEnum.RIGHT_FLINGER_ESC] = [
             servo_control.Servo_Controller(
-                800, 1300, 1800, False  # Min, Mid, Max, Reversed
+                min=800, mid=1300, max=1800, bReverse=False
             ), RIGHT_FLINGER_ESC_PIN, 'Right Flinger ESC']
 
         # Add Auxilary servo's. NOTE: Ball Flinger esc's are not reversed.
         self.servos[ServoEnum.LEFT_FLINGER_SERVO] = [
             servo_control.Servo_Controller(
-                800, 1300, 1800, False  # Min, Mid, Max, Reversed
+                min=800, mid=1300, max=1800, bReverse=False
             ), LEFT_FLINGER_SERVO_PIN, 'Left Flinger Servo']
         self.servos[ServoEnum.RIGHT_FLINGER_SERVO] = [
             servo_control.Servo_Controller(
-                800, 1300, 1800, False  # Min, Mid, Max, Reversed
+                min=800, mid=1300, max=1800, bReverse=False
             ), RIGHT_FLINGER_SERVO_PIN, 'Right Flinger Servo']
 
         # Add Auxilary servo's. NOTE: Aux 4 servo is not reversed.
         self.servos[ServoEnum.WINCH_SERVO] = [servo_control.Servo_Controller(
-            800, 1300, 1800, False  # Min, Mid, Max, Reversed
+            min=800, mid=1300, max=1800, bReverse=False
         ), WINCH_SERVO_PIN, 'Winch']
 
         # Always set these to None for initialisation
