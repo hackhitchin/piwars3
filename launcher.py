@@ -70,6 +70,7 @@ class launcher:
         # Create oled object, nominating the correct I2C bus, default address
         # Note: Set to None if you need to disable screen
         self.oled = ssd1306(VL53L0X.i2cbus)
+        self.pressed = 0
 
     def stop_threads(self):
         """ Single point of call to stop any RC or Challenge Threads """
@@ -324,27 +325,34 @@ class launcher:
 
                 if buttons_state is not None:
                     if (buttons_state & cwiid.BTN_A and
-                       self.challenge is None):
+                       self.challenge is None and self.pressed == 0):
+                        self.pressed = cwiid.BTN_A
                         # Only works when NOT in a challenge
                         self.menu_item_pressed()
                         self.show_menu()
 
-                    if (buttons_state & cwiid.BTN_B):
+                    if (buttons_state & cwiid.BTN_B and self.pressed == 0):
                         # Kill any previous Challenge / RC mode
                         # NOTE: will ALWAYS work
+                        self.pressed = cwiid.BTN_B
                         self.stop_threads()
 
                     if (buttons_state & cwiid.BTN_UP and
-                       self.challenge is None):
+                       self.challenge is None and self.pressed == 0):
                         # Only works when NOT in a challenge
+                        self.pressed = cwiid.BTN_UP
                         self.menu_mode = self.get_previous_mode(self.menu_mode)
                         self.show_menu()
 
                     if (buttons_state & cwiid.BTN_DOWN and
-                       self.challenge is None):
+                       self.challenge is None and self.pressed == 0):
                         # Only works when NOT in a challenge
+                        self.pressed = cwiid.BTN_DOWN
                         self.menu_mode = self.get_next_mode(self.menu_mode)
                         self.show_menu()
+
+                    if (buttons_state == 0):
+                        self.pressed = 0
 
                 if classic_buttons_state is not None:
                     if (classic_buttons_state & cwiid.CLASSIC_BTN_ZL or
