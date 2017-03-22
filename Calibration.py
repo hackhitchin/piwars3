@@ -3,20 +3,12 @@ import time
 import cwiid
 import os.path
 from ConfigParser import SafeConfigParser
-from enum import Enum
 # from lib_oled96 import ssd1306
 from core import ServoEnum
 try:
     from collections import OrderedDict
 except ImportError:
     from ordereddict import OrderedDict
-
-# class CalibrationMode(Enum):
-#     CM_NONE = 0
-#     CM_LEFT = 1
-#     CM_RIGHT = 2
-#     CM_LEFT_AUX_1 = 3
-#     CM_RIGHT_AUX_1 = 4
 
 
 class Calibration:
