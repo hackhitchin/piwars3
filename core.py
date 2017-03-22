@@ -82,6 +82,7 @@ class Core():
             self.PWMservo = PWM.Servo(pulse_incr_us=1)
             for pin in range(0, 3):
                 i2c_lidar.xshut([LIDAR_PINS[pin]])
+            for pin in range(0, 3):    
                 self.lidars.append(
                     i2c_lidar.create(LIDAR_PINS[pin], tof_lib, 0x2a + pin)
                 )

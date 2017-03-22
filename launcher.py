@@ -12,8 +12,10 @@ import core
 import rc
 import Calibration
 from lib_oled96 import ssd1306
+from maze import Maze
 
 import VL53L0X
+from debounce import debounce
 # from smbus import SMBus  # Commented out as I don't believe its required.
 from enum import Enum
 
@@ -69,7 +71,8 @@ class launcher:
 
         # Create oled object, nominating the correct I2C bus, default address
         # Note: Set to None if you need to disable screen
-        self.oled = ssd1306(VL53L0X.i2cbus)
+#        self.oled = ssd1306(VL53L0X.i2cbus)
+        self.oled = None
 
     def stop_threads(self):
         """ Single point of call to stop any RC or Challenge Threads """
@@ -103,7 +106,7 @@ class launcher:
         elif self.menu_mode == Mode.MODE_WALL:
             logging.info("Wall Mode")
         elif self.menu_mode == Mode.MODE_MAZE:
-            logging.info("Maze Mode")
+            self.start_maze_mode()
         elif self.menu_mode == Mode.MODE_CALIBRATION:
             self.start_calibration_mode()
 
@@ -114,6 +117,7 @@ class launcher:
             mode_name = self.menu_list[mode]
         return mode_name
 
+    @debounce(0.33)
     def get_next_mode(self, mode):
         """ Find the previous menu item """
         mode_index = self.menu_list.keys().index(mode)
@@ -122,6 +126,7 @@ class launcher:
             next_index = 0  # Wrapped round to end
         return self.menu_list.keys()[next_index]
 
+    @debounce(0.33)
     def get_previous_mode(self, mode):
         """ Find the previous menu item """
         mode_index = self.menu_list.keys().index(mode)
@@ -281,6 +286,25 @@ class launcher:
             target=self.challenge.run)
         self.challenge_thread.start()
         logging.info("Calibration Thread Running")
+
+    def start_maze_mode(self):
+        # Kill any previous Challenge / RC mode
+        self.stop_threads()
+
+        # Set Wiimote LED to RC Mode index
+        self.current_mode = Mode.MODE_MAZE
+
+        # Inform user we are about to start RC mode
+        logging.info("Entering into Maze Mode")
+        self.challenge = Maze(self.core, self.wiimote, self.oled)
+
+        # Create and start a new thread
+        # running the remote control script
+        logging.info("Starting Maze Thread")
+        self.challenge_thread = threading.Thread(
+            target=self.challenge.run)
+        self.challenge_thread.start()
+        logging.info("Maze Thread Running")        
 
     def run(self):
         """ Main Running loop controling bot mode and menu state """
