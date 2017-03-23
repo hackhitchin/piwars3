@@ -16,7 +16,7 @@ from lib_oled96 import ssd1306
 import VL53L0X
 # from smbus import SMBus  # Commented out as I don't believe its required.
 from enum import Enum
-from debounce import debounce
+from decorators import debounce
 
 try:
     from collections import OrderedDict
@@ -94,20 +94,6 @@ class launcher:
         # Show state on OLED display
         self.show_menu()
 
-    @debounce(0.25)
-    def menu_item_pressed(self):
-        """ Current menu item pressed. Do something """
-        if self.menu_mode == Mode.MODE_POWER:
-            self.power_off()
-        elif self.menu_mode == Mode.MODE_RC:
-            self.start_rc_mode()
-        elif self.menu_mode == Mode.MODE_WALL:
-            logging.info("Wall Mode")
-        elif self.menu_mode == Mode.MODE_MAZE:
-            logging.info("Maze Mode")
-        elif self.menu_mode == Mode.MODE_CALIBRATION:
-            self.start_calibration_mode()
-
     def get_mode_name(self, mode):
         """ Return appropriate mode name """
         mode_name = ""
@@ -149,6 +135,30 @@ class launcher:
             self.oled.canvas.text((10, 10), 'Mode: ' + mode_name, fill=1)
             # Now show the mesasge on the screen
             self.oled.display()
+
+    @debounce(0.25)
+    def menu_item_pressed(self):
+        """ Current menu item pressed. Do something """
+        if self.menu_mode == Mode.MODE_POWER:
+            self.power_off()
+        elif self.menu_mode == Mode.MODE_RC:
+            self.start_rc_mode()
+        elif self.menu_mode == Mode.MODE_WALL:
+            logging.info("Wall Mode")
+        elif self.menu_mode == Mode.MODE_MAZE:
+            logging.info("Maze Mode")
+        elif self.menu_mode == Mode.MODE_CALIBRATION:
+            self.start_calibration_mode()
+
+    @debounce(0.25)
+    def menu_up(self):
+        self.menu_mode = self.get_previous_mode(self.menu_mode)
+        self.show_menu()
+
+    @debounce(0.25)
+    def menu_down(self):
+        self.menu_mode = self.get_next_mode(self.menu_mode)
+        self.show_menu()
 
     def show_menu(self):
         """ Display menu. """
@@ -338,14 +348,12 @@ class launcher:
                     if (buttons_state & cwiid.BTN_UP and
                        self.challenge is None):
                         # Only works when NOT in a challenge
-                        self.menu_mode = self.get_previous_mode(self.menu_mode)
-                        self.show_menu()
+                        self.menu_up()
 
                     if (buttons_state & cwiid.BTN_DOWN and
                        self.challenge is None):
                         # Only works when NOT in a challenge
-                        self.menu_mode = self.get_next_mode(self.menu_mode)
-                        self.show_menu()
+                        self.menu_down()
 
                 if classic_buttons_state is not None:
                     if (classic_buttons_state & cwiid.CLASSIC_BTN_ZL or
