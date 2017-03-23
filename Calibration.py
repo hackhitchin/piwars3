@@ -1,18 +1,14 @@
 import core
 import time
 import cwiid
-from lib_oled96 import ssd1306
 import os.path
 from ConfigParser import SafeConfigParser
-from enum import Enum
-
-
-class CalibrationMode(Enum):
-    CM_NONE = 0
-    CM_LEFT = 1
-    CM_RIGHT = 2
-    CM_LEFT_AUX_1 = 3
-    CM_RIGHT_AUX_1 = 4
+# from lib_oled96 import ssd1306
+from core import ServoEnum
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
 
 
 class Calibration:
@@ -26,44 +22,52 @@ class Calibration:
 
         self.ticks = 0
 
+        # Note: string desciptions on the right are for
+        # reference only. Not currently used in this code.
+        self.menu_list = OrderedDict((
+            (ServoEnum.LEFT_MOTOR_ESC, "Left Motor ESC"),
+            (ServoEnum.RIGHT_MOTOR_ESC, "Right Motor ESC"),
+            (ServoEnum.LEFT_AUX_ESC, "Left Aux ESC"),
+            (ServoEnum.RIGHT_AUX_ESC, "Right Aux ESC"),
+            (ServoEnum.LEFT_FLINGER_ESC, "Left Flinger ESC"),
+            (ServoEnum.RIGHT_FLINGER_ESC, "Right Flinger ESC"),
+            (ServoEnum.LEFT_FLINGER_SERVO, "Left Flinger Servo"),
+            (ServoEnum.RIGHT_FLINGER_SERVO, "Right flinger Servo"),
+            (ServoEnum.WINCH_SERVO, "Winch Servo")
+        ))
+
         # Default current mode to NONE
-        self.mode = CalibrationMode.CM_NONE
+        self.mode = ServoEnum.LEFT_MOTOR_ESC
 
-    def show_motor_config(self, left):
-        """ Show motor/aux config on OLED display """
+    def get_next_mode(self, mode):
+        """ Find the previous menu item """
+        mode_index = self.menu_list.keys().index(mode)
+        next_index = mode_index + 1
+        if next_index >= len(self.menu_list):
+            next_index = 0  # Wrapped round to end
+        return self.menu_list.keys()[next_index]
+
+    def get_previous_mode(self, mode):
+        """ Find the previous menu item """
+        mode_index = self.menu_list.keys().index(mode)
+        previous_index = mode_index - 1
+        if previous_index < 0:
+            previous_index = len(self.menu_list) - 1  # Wrapped round to end
+        return self.menu_list.keys()[previous_index]
+
+    def show_servo_config(self, servo_id):
+        """ Show servo config """
         if self.oled is not None:
-            if left:
-                title = "Left Motor:"
-                message = str(self.core.left_servo.servo_min) + '/'\
-                    + str(self.core.left_servo.servo_mid) + '/'\
-                    + str(self.core.left_servo.servo_max)
-            else:
-                title = "Right Motor:"
-                message = str(self.core.right_servo.servo_min) + '/'\
-                    + str(self.core.right_servo.servo_mid) + '/'\
-                    + str(self.core.right_servo.servo_max)
+            servo = self.core.servos[servo_id]
+            title = "{}:".format(servo[2])
+            message = "{} / {} / {}".format(
+                str(servo[0].servo_min),
+                str(servo[0].servo_mid),
+                str(servo[0].servo_max)
+            )
 
-            self.oled.cls()  # Clear Screen
-            self.oled.canvas.text((10, 10), title, fill=1)
-            self.oled.canvas.text((10, 30), message, fill=1)
-            # Now show the mesasge on the screen
-            self.oled.display()
-
-    def show_aux_1_config(self, left):
-        """ Show motor/aux config on OLED display """
-        if self.oled is not None:
-            if left:
-                title = "Left Aux 1:"
-                message = str(self.core.left_aux_1_servo.servo_min) + '/'\
-                    + str(self.core.left_aux_1_servo.servo_mid) + '/'\
-                    + str(self.core.left_aux_1_servo.servo_max)
-            else:
-                title = "Right Aux 1:"
-                message = str(self.core.right_aux_1_servo.servo_min) + '/'\
-                    + str(self.core.right_aux_1_servo.servo_mid) + '/'\
-                    + str(self.core.right_aux_1_servo.servo_max)
-
-            self.oled.cls()  # Clear Screen
+            # Clear Screen
+            self.oled.cls()
             self.oled.canvas.text((10, 10), title, fill=1)
             self.oled.canvas.text((10, 30), message, fill=1)
             # Now show the mesasge on the screen
@@ -78,6 +82,11 @@ class Calibration:
             start point for the threaded challenge. """
         adjust_value = 5
 
+        # Sleep a small time to allow screen to refresh in launcher code
+        time.sleep(0.25)
+        # Show servo config for current item.
+        self.show_servo_config(self.mode)
+
         # Loop indefinitely, or until this thread is flagged as stopped.
         while self.wiimote and not self.killed:
 
@@ -86,52 +95,24 @@ class Calibration:
             # While in RC mode, get joystick states and pass speeds to motors.
             classic_buttons_state = self.wiimote.get_classic_buttons()
             if classic_buttons_state is not None:
-                if (classic_buttons_state & cwiid.CLASSIC_BTN_UP):
-                    self.mode = CalibrationMode.CM_LEFT_AUX_1
-                    value_adjusted = True
-                if (classic_buttons_state & cwiid.CLASSIC_BTN_DOWN):
-                    self.mode = CalibrationMode.CM_RIGHT_AUX_1
-                    value_adjusted = True
 
                 if (classic_buttons_state & cwiid.CLASSIC_BTN_LEFT):
-                    self.mode = CalibrationMode.CM_LEFT
+                    self.mode = self.get_previous_mode(self.mode)
                     value_adjusted = True
                 if (classic_buttons_state & cwiid.CLASSIC_BTN_RIGHT):
-                    self.mode = CalibrationMode.CM_RIGHT_AUX_1
+                    self.mode = self.get_next_mode(self.mode)
                     value_adjusted = True
 
                 if (classic_buttons_state & cwiid.CLASSIC_BTN_PLUS):
+                    self.core.servos[self.mode][0].adjust_range(adjust_value)
                     value_adjusted = True
-                    if self.mode == CalibrationMode.CM_LEFT:
-                        self.core.left_servo.adjust_range(adjust_value)
-                    if self.mode == CalibrationMode.CM_RIGHT:
-                        self.core.right_servo.adjust_range(adjust_value)
-                    if self.mode == CalibrationMode.CM_LEFT_AUX_1:
-                        self.core.left_aux_1_servo.adjust_range(adjust_value)
-                    if self.mode == CalibrationMode.CM_RIGHT_AUX_1:
-                        self.core.right_aux_1_servo.adjust_range(adjust_value)
-
                 if (classic_buttons_state & cwiid.CLASSIC_BTN_MINUS):
+                    self.core.servos[self.mode][0].adjust_range(-adjust_value)
                     value_adjusted = True
-                    if self.mode == CalibrationMode.CM_LEFT:
-                        self.core.left_servo.adjust_range(-adjust_value)
-                    if self.mode == CalibrationMode.CM_RIGHT:
-                        self.core.right_servo.adjust_range(-adjust_value)
-                    if self.mode == CalibrationMode.CM_LEFT_AUX_1:
-                        self.core.left_aux_1_servo.adjust_range(-adjust_value)
-                    if self.mode == CalibrationMode.CM_RIGHT_AUX_1:
-                        self.core.right_aux_1_servo.adjust_range(-adjust_value)
 
             # Show current config
             if value_adjusted:
-                if self.mode == CalibrationMode.CM_LEFT:
-                    self.show_motor_config(True)
-                elif self.mode == CalibrationMode.CM_RIGHT:
-                    self.show_motor_config(False)
-                elif self.mode == CalibrationMode.CM_LEFT_AUX_1:
-                    self.show_aux_1_config(True)
-                elif self.mode == CalibrationMode.CM_RIGHT_AUX_1:
-                    self.show_aux_1_config(False)
+                self.show_servo_config(self.mode)
 
                 # Send motors "stick neutral" so that we can test centre value
                 self.core.throttle(0.0, 0.0)
@@ -153,35 +134,22 @@ class Calibration:
 
             # Read the motor min/mid/max servo ranges
             if self.core is not None:
-                # Read Wheel motor ESC ranges
-                self.core.left_servo.servo_min =\
-                    int(config.get('motors', 'LEFT_MIN'))
-                self.core.left_servo.servo_mid =\
-                    int(config.get('motors', 'LEFT_MID'))
-                self.core.left_servo.servo_max =\
-                    int(config.get('motors', 'LEFT_MAX'))
+                # Read in min/mid/max of menu items that we can change.
+                for item in self.menu_list.items():
+                    item_enum_str = str(item[0]).split('.')
+                    item_min_str = "{}_MIN".format(item_enum_str[0])
+                    item_mid_str = "{}_MID".format(item_enum_str[0])
+                    item_max_str = "{}_MAX".format(item_enum_str[0])
+                    try:
+                        self.core.servos[item[0]][0].servo_min = \
+                            int(config.get('motors', item_min_str))
+                        self.core.servos[item[0]][0].servo_mid = \
+                            int(config.get('motors', item_mid_str))
+                        self.core.servos[item[0]][0].servo_max = \
+                            int(config.get('motors', item_max_str))
+                    except:
+                        print("Failed to read item from ini.")
 
-                self.core.right_servo.servo_min =\
-                    int(config.get('motors', 'RIGHT_MIN'))
-                self.core.right_servo.servo_mid =\
-                    int(config.get('motors', 'RIGHT_MID'))
-                self.core.right_servo.servo_max =\
-                    int(config.get('motors', 'RIGHT_MAX'))
-
-                # Read Auxilery ESC ranges
-                self.core.left_aux_1_servo.servo_min = \
-                    int(config.get('motors', 'LEFT_AUX_1_MIN'))
-                self.core.left_aux_1_servo.servo_mid = \
-                    int(config.get('motors', 'LEFT_AUX_1_MID'))
-                self.core.left_aux_1_servo.servo_max = \
-                    int(config.get('motors', 'LEFT_AUX_1_MAX'))
-
-                self.core.right_aux_1_servo.servo_min = \
-                    int(config.get('motors', 'RIGHT_AUX_1_MIN'))
-                self.core.right_aux_1_servo.servo_mid = \
-                    int(config.get('motors', 'RIGHT_AUX_1_MID'))
-                self.core.right_aux_1_servo.servo_max = \
-                    int(config.get('motors', 'RIGHT_AUX_1_MAX'))
         print("Finished Reading Config")
 
     def write_config(self):
@@ -200,41 +168,24 @@ class Calibration:
         except:
             print("Failed to add, could already exist")
 
-        # Write out the wheel motor ESC ranges
-        config.set('motors', 'LEFT_MIN', str(self.core.left_servo.servo_min))
-        config.set('motors', 'LEFT_MID', str(self.core.left_servo.servo_mid))
-        config.set('motors', 'LEFT_MAX', str(self.core.left_servo.servo_max))
-
-        config.set('motors', 'RIGHT_MIN', str(self.core.right_servo.servo_min))
-        config.set('motors', 'RIGHT_MID', str(self.core.right_servo.servo_mid))
-        config.set('motors', 'RIGHT_MAX', str(self.core.right_servo.servo_max))
-
-        # Write out the Auxilery ESC ranges
-        config.set(
-            'motors',
-            'LEFT_AUX_1_MIN',
-            str(self.core.left_aux_1_servo.servo_min))
-        config.set(
-            'motors',
-            'LEFT_AUX_1_MID',
-            str(self.core.left_aux_1_servo.servo_mid))
-        config.set(
-            'motors',
-            'LEFT_AUX_1_MAX',
-            str(self.core.left_aux_1_servo.servo_max))
-        # And now the right
-        config.set(
-            'motors',
-            'RIGHT_AUX_1_MIN',
-            str(self.core.right_aux_1_servo.servo_min))
-        config.set(
-            'motors',
-            'RIGHT_AUX_1_MID',
-            str(self.core.right_aux_1_servo.servo_mid))
-        config.set(
-            'motors',
-            'RIGHT_AUX_1_MAX',
-            str(self.core.right_aux_1_servo.servo_max))
+        # Write out min/mid/max of menu items that we can change.
+        for item in self.menu_list.items():
+            item_enum_str = str(item[0]).split('.')
+            item_min_str = "{}_MIN".format(item_enum_str[0])
+            item_mid_str = "{}_MID".format(item_enum_str[0])
+            item_max_str = "{}_MAX".format(item_enum_str[0])
+            config.set(
+                'motors',
+                item_min_str,
+                str(self.core.servos[item[0]][0].servo_min))
+            config.set(
+                'motors',
+                item_mid_str,
+                str(self.core.servos[item[0]][0].servo_mid))
+            config.set(
+                'motors',
+                item_max_str,
+                str(self.core.servos[item[0]][0].servo_max))
 
 
 if __name__ == "__main__":

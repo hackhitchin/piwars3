@@ -6,14 +6,40 @@ import i2c_lidar
 
 from RPIO import PWM
 from ctypes import *
+from enum import Enum
 
 LIDAR_PINS = [18, 15, 14]
 LIDAR_LEFT = 0
 LIDAR_FRONT = 1
 LIDAR_RIGHT = 2
 
-LEFT_SERVO_PIN = 17
-RIGHT_SERVO_PIN = 27
+LEFT_MOTOR_ESC_PIN = 17
+RIGHT_MOTOR_ESC_PIN = 27
+
+LEFT_AUX_ESC_PIN = 0
+RIGHT_AUX_ESC_PIN = 0
+
+LEFT_FLINGER_ESC_PIN = 0
+RIGHT_FLINGER_ESC_PIN = 0
+
+LEFT_FLINGER_SERVO_PIN = 0
+RIGHT_FLINGER_SERVO_PIN = 0
+
+WINCH_SERVO_PIN = 0
+
+
+class ServoEnum(Enum):
+    # Enum listing each servo that we can control
+    SERVO_NONE = 0
+    LEFT_MOTOR_ESC = 1
+    RIGHT_MOTOR_ESC = 2
+    LEFT_AUX_ESC = 3
+    RIGHT_AUX_ESC = 4
+    LEFT_FLINGER_ESC = 5
+    RIGHT_FLINGER_ESC = 6
+    LEFT_FLINGER_SERVO = 7
+    RIGHT_FLINGER_SERVO = 8
+    WINCH_SERVO = 9
 
 
 class Core():
@@ -24,49 +50,52 @@ class Core():
     def __init__(self, tof_lib):
         """ Constructor """
 
-        # Minimum and maximum theoretical pulse widths. Ignore reversing here
-        # ESC "DB1" midpoint is about 1440
-        # ESC "DB2" midpoint is 1500
-        self.LEFT_MIN = 800
-        self.LEFT_MID = 1300
-        self.LEFT_MAX = 1800
+        # Create a list of servo's
+        self.servos = dict()
+        # Add Motor Servo's. NOTE: Left motor esc is reversed.
+        self.servos[ServoEnum.LEFT_MOTOR_ESC] = [
+            servo_control.Servo_Controller(
+                min=800, mid=1300, max=1800, bReverse=True
+            ), LEFT_MOTOR_ESC_PIN, 'Left Motor']
+        self.servos[ServoEnum.RIGHT_MOTOR_ESC] = [
+            servo_control.Servo_Controller(
+                min=800, mid=1300, max=1800, bReverse=False
+            ), RIGHT_MOTOR_ESC_PIN, 'Right Motor']
 
-        self.RIGHT_MIN = 800
-        self.RIGHT_MID = 1300
-        self.RIGHT_MAX = 1800
+        # Add Auxilary servo's. NOTE: Aux esc's are not reversed.
+        self.servos[ServoEnum.LEFT_AUX_ESC] = [
+            servo_control.Servo_Controller(
+                min=800, mid=1300, max=1800, bReverse=False
+            ), LEFT_AUX_ESC_PIN, 'Left Aux']
+        self.servos[ServoEnum.RIGHT_AUX_ESC] = [
+            servo_control.Servo_Controller(
+                min=800, mid=1300, max=1800, bReverse=False
+            ), RIGHT_AUX_ESC_PIN, 'Right Aux']
 
-        self.LEFT_AUX_1_MIN = 800
-        self.LEFT_AUX_1_MID = 1300
-        self.LEFT_AUX_1_MAX = 1800
+        # Add Auxilary servo's. NOTE: Ball Flinger esc's are not reversed.
+        self.servos[ServoEnum.LEFT_FLINGER_ESC] = [
+            servo_control.Servo_Controller(
+                min=800, mid=1300, max=1800, bReverse=False
+            ), LEFT_FLINGER_ESC_PIN, 'Left Flinger ESC']
+        self.servos[ServoEnum.RIGHT_FLINGER_ESC] = [
+            servo_control.Servo_Controller(
+                min=800, mid=1300, max=1800, bReverse=False
+            ), RIGHT_FLINGER_ESC_PIN, 'Right Flinger ESC']
 
-        self.RIGHT_AUX_1_MIN = 800
-        self.RIGHT_AUX_1_MID = 1300
-        self.RIGHT_AUX_1_MAX = 1800
+        # Add Auxilary servo's. NOTE: Ball Flinger esc's are not reversed.
+        self.servos[ServoEnum.LEFT_FLINGER_SERVO] = [
+            servo_control.Servo_Controller(
+                min=800, mid=1300, max=1800, bReverse=False
+            ), LEFT_FLINGER_SERVO_PIN, 'Left Flinger Servo']
+        self.servos[ServoEnum.RIGHT_FLINGER_SERVO] = [
+            servo_control.Servo_Controller(
+                min=800, mid=1300, max=1800, bReverse=False
+            ), RIGHT_FLINGER_SERVO_PIN, 'Right Flinger Servo']
 
-        self.left_servo = servo_control.Servo_Controller(
-            self.LEFT_MIN,
-            self.LEFT_MID,
-            self.LEFT_MAX, True)
-        self.right_servo = servo_control.Servo_Controller(
-            self.RIGHT_MIN,
-            self.RIGHT_MID,
-            self.RIGHT_MAX, False)
-
-        self.left_aux_1_servo = servo_control.Servo_Controller(
-            self.LEFT_AUX_1_MIN,
-            self.LEFT_AUX_1_MID,
-            self.LEFT_AUX_1_MAX, False)
-        self.right_aux_1_servo = servo_control.Servo_Controller(
-            self.RIGHT_AUX_1_MIN,
-            self.RIGHT_AUX_1_MID,
-            self.RIGHT_AUX_1_MAX, False)
-
-        self.left_channel = 1
-        self.right_channel = 2
-
-        # Proximity sensor: roughly cm from closest measurable point
-        # self.tof_left = sensor.Sensor(0, 450, 20, 0)
-        # self.PWMservo = PWM.Servo(pulse_incr_us=1)
+        # Add Auxilary servo's. NOTE: Aux 4 servo is not reversed.
+        self.servos[ServoEnum.WINCH_SERVO] = [servo_control.Servo_Controller(
+            min=800, mid=1300, max=1800, bReverse=False
+        ), WINCH_SERVO_PIN, 'Winch']
 
         # Always set these to None for initialisation
         self.PWMservo = None
@@ -80,16 +109,18 @@ class Core():
         else:
             self.arduino = None
             self.PWMservo = PWM.Servo(pulse_incr_us=1)
-            for pin in range(0, 3):
-                i2c_lidar.xshut([LIDAR_PINS[pin]])
-                self.lidars.append(
-                    i2c_lidar.create(LIDAR_PINS[pin], tof_lib, 0x2a + pin)
-                )
+
+        # I2C lidar sensors should be enabled
+        # in both Arduino mode or direct pi mode.
+        for pin in range(0, 3):
+            i2c_lidar.xshut([LIDAR_PINS[pin]])
+            self.lidars.append(
+                i2c_lidar.create(LIDAR_PINS[pin], tof_lib, 0x2a + pin)
+            )
 
     def enable_motors(self, enable):
         """ Called when we want to enable/disable the motors.
             When disabled, will ignore any new motor commands. """
-
         # Send motor neutral if disabling.
         if not enable:
             self.set_neutral()
@@ -98,13 +129,24 @@ class Core():
         if self.arduino:
             self.arduino.enable_motors(enable)
 
-    def throttle(self, left_speed, right_speed):
+    def throttle(self,
+                 left_speed,
+                 right_speed,
+                 left_servo=ServoEnum.LEFT_MOTOR_ESC,
+                 right_servo=ServoEnum.RIGHT_MOTOR_ESC):
         """ Send motors speed value in range [-1,1]
             where 0 = neutral """
 
         # Calculate microseconds from command speed
-        left_micros = self.left_servo.micros(left_speed)
-        right_micros = self.right_servo.micros(right_speed)
+        left_micros = 0
+        right_micros = 0
+        try:
+            if left_servo != ServoEnum.SERVO_NONE:
+                left_micros = self.servos[left_servo][0].micros(left_speed)
+            if right_servo != ServoEnum.SERVO_NONE:
+                right_micros = self.servos[right_servo][0].micros(right_speed)
+        except:
+            print("Failed to get servo throttle micros")
 
         # Tell the Arduino to move to that speed (eventually)
         if self.arduino:
@@ -112,32 +154,45 @@ class Core():
         else:
             if self.PWMservo:
                 # TODO: make this ramp speeds using RPIO
-                self.PWMservo.set_servo(LEFT_SERVO_PIN, left_micros)
-                self.PWMservo.set_servo(RIGHT_SERVO_PIN, right_micros)
-                # print("Set PWM servos to %d, %d" % (left_micros, right_micros))
+                try:
+                    if left_servo != ServoEnum.SERVO_NONE:
+                        self.PWMservo.set_servo(
+                            self.servos[left_servo][1],
+                            left_micros)
+                    if right_servo != ServoEnum.SERVO_NONE:
+                        self.PWMservo.set_servo(
+                            self.servos[right_servo][1],
+                            right_micros)
+                except:
+                    print("Failed to set servo throttle micros")
 
-    def direct_speed(self, left_speed, right_speed):
-        """ Send motors speed value in range [-1,1]
-            where 0 = neutral.
-            WARNING: this method tells the motors
-            to change speed IMEDIATELY without ramping. """
-
-        # Calculate microseconds from command speed
-        left_micros = self.left_servo.micros(left_speed)
-        right_micros = self.right_servo.micros(right_speed)
-
-        # Tell the Arduino to set motors to that speed immediately
-        if self.arduino:
-            self.arduino.direct_micros(left_micros, right_micros)
-        else:
-            if self.PWMservo:
-                self.PWMservo.set_servo(LEFT_SERVO_PIN, left_micros)
-                self.PWMservo.set_servo(RIGHT_SERVO_PIN, right_micros)
-
-    def set_neutral(self):
+    def set_neutral(self,
+                    left_servo=ServoEnum.LEFT_MOTOR_ESC,
+                    right_servo=ServoEnum.RIGHT_MOTOR_ESC):
         """ Send neutral to the motors IMEDIATELY. """
+        try:
+            if left_servo != ServoEnum.SERVO_NONE:
+                left_mid = self.servos[left_servo][0].servo_mid
+            if right_servo != ServoEnum.SERVO_NONE:
+                right_mid = self.servos[right_servo][0].servo_mid
+        except:
+            print("Failed to get servo enum values")
+
         if self.arduino:
-            self.arduino.direct_micros(self.LEFT_MID, self.RIGHT_MID)
+            self.arduino.direct_micros(left_mid, right_mid)
+        else:
+            # Need to send 0 speed to motors if neutral selected.
+            try:
+                if left_servo != ServoEnum.SERVO_NONE:
+                    self.PWMservo.set_servo(
+                        self.servos[left_servo][1],
+                        left_mid)
+                if right_servo != ServoEnum.SERVO_NONE:
+                    self.PWMservo.set_servo(
+                        self.servos[right_servo][1],
+                        right_mid)
+            except:
+                print("Failed to set servo neutral PWM values")
 
     def read_sensor(self, pin):
         """ Read a sensor value and return it. """
@@ -149,10 +204,6 @@ class Core():
         return sensor_value
 
     def stop(self):
-        if self.arduino:
-            self.arduino.direct_micros(self.LEFT_MID, self.RIGHT_MID)
-        else:
-            self.PWMservo.set_servo(LEFT_SERVO_PIN, self.LEFT_MID)
-            self.PWMservo.set_servo(RIGHT_SERVO_PIN, self.RIGHT_MID)
-            for pin in range(0, 3):
-                i2c_lidar.turnoff(LIDAR_PINS[pin])
+        self.set_neutral()
+        for pin in range(0, 3):
+            i2c_lidar.turnoff(LIDAR_PINS[pin])
