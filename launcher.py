@@ -16,6 +16,7 @@ from lib_oled96 import ssd1306
 import VL53L0X
 # from smbus import SMBus  # Commented out as I don't believe its required.
 from enum import Enum
+from debounce import debounce
 
 try:
     from collections import OrderedDict
@@ -93,6 +94,7 @@ class launcher:
         # Show state on OLED display
         self.show_menu()
 
+    @debounce(0.25)
     def menu_item_pressed(self):
         """ Current menu item pressed. Do something """
         if self.menu_mode == Mode.MODE_POWER:
