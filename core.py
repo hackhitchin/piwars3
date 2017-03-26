@@ -50,6 +50,7 @@ class Core():
     def __init__(self, tof_lib):
         """ Constructor """
 
+        self.tof_lib = tof_lib
         # Create a list of servo's
         self.servos = dict()
         # Add Motor Servo's. NOTE: Left motor esc is reversed.
@@ -110,13 +111,7 @@ class Core():
             self.arduino = None
             self.PWMservo = PWM.Servo(pulse_incr_us=1)
 
-        # I2C lidar sensors should be enabled
-        # in both Arduino mode or direct pi mode.
-        for pin in range(0, 3):
-            i2c_lidar.xshut([LIDAR_PINS[pin]])
-            self.lidars.append(
-                i2c_lidar.create(LIDAR_PINS[pin], tof_lib, 0x2a + pin)
-            )
+        self.enable_lidar()
 
     def enable_motors(self, enable):
         """ Called when we want to enable/disable the motors.
@@ -205,5 +200,15 @@ class Core():
 
     def stop(self):
         self.set_neutral()
+
+    def enable_lidar(self):
+        # I2C lidar sensors should be enabled
+        # in both Arduino mode or direct pi mode.
+        # I know this is all kinds of redundant but it worked on the hardware
+        # so it's staying
         for pin in range(0, 3):
-            i2c_lidar.turnoff(LIDAR_PINS[pin])
+            i2c_lidar.xshut([LIDAR_PINS[pin]])
+        for pin in range(0, 3):
+            self.lidars.append(
+                i2c_lidar.create(LIDAR_PINS[pin], self.tof_lib, 0x2a + pin)
+            )
