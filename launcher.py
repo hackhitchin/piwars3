@@ -7,6 +7,8 @@ import time
 import threading
 from wiimote import Wiimote, WiimoteException
 import RPi.GPIO as GPIO
+from maze import Maze
+from straightline import StraightLine
 
 import core
 import rc
@@ -60,7 +62,7 @@ class launcher:
         self.menu_list = OrderedDict((
             (Mode.MODE_POWER, "Power Off"),
             (Mode.MODE_RC, "RC"),
-            (Mode.MODE_WALL, "Wall"),
+            (Mode.MODE_SPEED, "Speed"),
             (Mode.MODE_MAZE, "Maze"),
             (Mode.MODE_CALIBRATION, "Calibration")
         ))
@@ -69,7 +71,8 @@ class launcher:
 
         # Create oled object, nominating the correct I2C bus, default address
         # Note: Set to None if you need to disable screen
-        self.oled = ssd1306(VL53L0X.i2cbus)
+        # self.oled = ssd1306(VL53L0X.i2cbus)
+        self.oled = None
 
     def stop_threads(self):
         """ Single point of call to stop any RC or Challenge Threads """
@@ -143,10 +146,10 @@ class launcher:
             self.power_off()
         elif self.menu_mode == Mode.MODE_RC:
             self.start_rc_mode()
-        elif self.menu_mode == Mode.MODE_WALL:
-            logging.info("Wall Mode")
         elif self.menu_mode == Mode.MODE_MAZE:
-            logging.info("Maze Mode")
+            self.start_maze_mode()
+        elif self.menu_mode == Mode.MODE_SPEED:
+            self.start_speed_mode()            
         elif self.menu_mode == Mode.MODE_CALIBRATION:
             self.start_calibration_mode()
 
@@ -292,6 +295,52 @@ class launcher:
             target=self.challenge.run)
         self.challenge_thread.start()
         logging.info("Calibration Thread Running")
+
+    def start_maze_mode(self):
+        # Kill any previous Challenge / RC mode
+        self.stop_threads()
+
+        # Set Wiimote LED to RC Mode index
+        self.current_mode = Mode.MODE_MAZE
+
+        # Inform user we are about to start RC mode
+        logging.info("Entering into Maze Mode")
+
+        self.challenge = \
+            Maze(self.core, self.wiimote, self.oled)
+
+        # Create and start a new thread
+        # running the remote control script
+        logging.info("Starting Maze Thread")
+
+        self.challenge_thread = threading.Thread(
+            target=self.challenge.run)
+
+        self.challenge_thread.start()
+        logging.info("Maze Thread Running")
+
+    def start_speed_mode(self):
+        # Kill any previous Challenge / RC mode
+        self.stop_threads()
+
+        # Set Wiimote LED to RC Mode index
+        self.current_mode = Mode.MODE_SPEED
+
+        # Inform user we are about to start RC mode
+        logging.info("Entering into Speed Mode")
+
+        self.challenge = \
+            StraightLine(self.core, self.wiimote, self.oled)
+
+        # Create and start a new thread
+        # running the remote control script
+        logging.info("Starting Speed Challenge Thread")
+
+        self.challenge_thread = threading.Thread(
+            target=self.challenge.run)
+
+        self.challenge_thread.start()
+        logging.info("Speed Thread Running")
 
     def run(self):
         """ Main Running loop controling bot mode and menu state """
