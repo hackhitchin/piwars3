@@ -26,14 +26,14 @@ class LineFollower:
         if self.oled is not None:
             # Format the speed to 2dp
             if len(line_sensor) == 8:
-                message = ("[{}] "
-                           "[{}] "
-                           "[{}] "
-                           "[{}] "
-                           "[{}] "
-                           "[{}] "
-                           "[{}] "
-                           "[{}]") % (
+                message = ("{}, "
+                           "{}, "
+                           "{}, "
+                           "{}, "
+                           "{}, "
+                           "{}, "
+                           "{}, "
+                           "{}").format(
                     line_sensor[0],
                     line_sensor[1],
                     line_sensor[2],
@@ -41,12 +41,13 @@ class LineFollower:
                     line_sensor[4],
                     line_sensor[5],
                     line_sensor[6],
-                    line_sensor[7])
+                    line_sensor[7]
+                )
 
-            self.oled.cls()  # Clear Screen
-            self.oled.canvas.text((10, 10), message, fill=1)
-            # Now show the mesasge on the screen
-            self.oled.display()
+                self.oled.cls()  # Clear Screen
+                self.oled.canvas.text((10, 10), message, fill=1)
+                # Now show the mesasge on the screen
+                self.oled.display()
 
     def stop(self):
         """Simple method to stop the RC loop"""
