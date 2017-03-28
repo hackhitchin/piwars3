@@ -11,6 +11,7 @@ import RPi.GPIO as GPIO
 import core
 import rc
 import Calibration
+import LineFollower
 from lib_oled96 import ssd1306
 
 import VL53L0X
@@ -33,6 +34,7 @@ class Mode(Enum):
     MODE_WALL = 3
     MODE_MAZE = 4
     MODE_CALIBRATION = 5
+    MODE_LINE = 6
 
 
 class launcher:
@@ -61,7 +63,8 @@ class launcher:
             (Mode.MODE_RC, "RC"),
             (Mode.MODE_WALL, "Wall"),
             (Mode.MODE_MAZE, "Maze"),
-            (Mode.MODE_CALIBRATION, "Calibration")
+            (Mode.MODE_CALIBRATION, "Calibration"),
+            (Mode.MODE_LINE, "Line Follow")
         ))
         self.current_mode = Mode.MODE_NONE
         self.menu_mode = Mode.MODE_RC
@@ -105,6 +108,8 @@ class launcher:
             logging.info("Maze Mode")
         elif self.menu_mode == Mode.MODE_CALIBRATION:
             self.start_calibration_mode()
+        elif self.menu_mode == Mode.MODE_LINE:
+            self.start_line_follower_mode()
 
     def get_mode_name(self, mode):
         """ Return appropriate mode name """
@@ -280,6 +285,26 @@ class launcher:
             target=self.challenge.run)
         self.challenge_thread.start()
         logging.info("Calibration Thread Running")
+
+    def start_line_follower_mode(self):
+        """ Kill any previous challenge and start line following mode. """
+        self.stop_threads()
+
+        # Set Wiimote LED to RC Mode index
+        self.current_mode = Mode.MODE_LINE
+
+        # Inform user we are about to start RC mode
+        logging.info("Entering into Line Follower Mode")
+        self.challenge = \
+            LineFollower.LineFollower(self.core, self.oled)
+
+        # Create and start a new thread
+        # running the remote control script
+        logging.info("Starting Line Follower Thread")
+        self.challenge_thread = threading.Thread(
+            target=self.challenge.run)
+        self.challenge_thread.start()
+        logging.info("Line Follower Thread Running")
 
     def run(self):
         """ Main Running loop controling bot mode and menu state """
