@@ -25,22 +25,23 @@ class LineFollower:
         """ Show motor/aux config on OLED display """
         if self.oled is not None:
             # Format the speed to 2dp
-            message = ("[%0.2f] "
-                       "[%0.2f] "
-                       "[%0.2f] "
-                       "[%0.2f] "
-                       "[%0.2f] "
-                       "[%0.2f] "
-                       "[%0.2f] "
-                       "[%0.2f]") % (
-                line_sensor[0],
-                line_sensor[1],
-                line_sensor[2],
-                line_sensor[3],
-                line_sensor[4],
-                line_sensor[5],
-                line_sensor[6],
-                line_sensor[7])
+            if len(line_sensor) == 8:
+                message = ("[{}] "
+                           "[{}] "
+                           "[{}] "
+                           "[{}] "
+                           "[{}] "
+                           "[{}] "
+                           "[{}] "
+                           "[{}]") % (
+                    line_sensor[0],
+                    line_sensor[1],
+                    line_sensor[2],
+                    line_sensor[3],
+                    line_sensor[4],
+                    line_sensor[5],
+                    line_sensor[6],
+                    line_sensor[7])
 
             self.oled.cls()  # Clear Screen
             self.oled.canvas.text((10, 10), message, fill=1)
@@ -69,7 +70,7 @@ class LineFollower:
             # read sensor values as string from arduino.
             sensor_values = result_str.split(',')
             # Convert list of strings to list of ints
-            sensor_values = map(int, sensor_values)
+            # sensor_values = map(int, sensor_values)
 
             # pause for brief time.
             time.sleep(0.05)
