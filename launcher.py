@@ -33,7 +33,7 @@ class Mode(Enum):
     MODE_NONE = 0
     MODE_POWER = 1
     MODE_RC = 2
-    MODE_WALL = 3
+    MODE_SPEED = 3
     MODE_MAZE = 4
     MODE_CALIBRATION = 5
 
@@ -149,7 +149,7 @@ class launcher:
         elif self.menu_mode == Mode.MODE_MAZE:
             self.start_maze_mode()
         elif self.menu_mode == Mode.MODE_SPEED:
-            self.start_speed_mode()            
+            self.start_speed_mode()
         elif self.menu_mode == Mode.MODE_CALIBRATION:
             self.start_calibration_mode()
 

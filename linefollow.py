@@ -2,6 +2,7 @@ import core
 import time
 import PID
 
+
 class LineFollow:
     def __init__(self, core_module):
         """Class Constructor"""

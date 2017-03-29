@@ -60,7 +60,7 @@ class Core():
             ), LEFT_MOTOR_ESC_PIN, 'Left Motor']
         self.servos[ServoEnum.RIGHT_MOTOR_ESC] = [
             servo_control.Servo_Controller(
-                min=800, mid=1300, max=1800, bReverse=False
+                min=810, mid=1310, max=1810, bReverse=False
             ), RIGHT_MOTOR_ESC_PIN, 'Right Motor']
 
         # Add Auxilary servo's. NOTE: Aux esc's are not reversed.

@@ -3,14 +3,16 @@ import time
 import PID
 
 class StraightLine:
-    def __init__(self, core_module):
+    def __init__(self, core_module, wiimote, oled):
         """Class Constructor"""
         self.killed = False
         self.core = core_module
         self.ticks = 0
         self.tick_time = 0.05 # How many seconds per control loop
-        self.time_limit = 2 # How many seconds to run for
+        self.time_limit = 0.9 # How many seconds to run for
         self.follow_left = True
+        self.speed_mid = 0.4
+        self.speed_range = -0.4        
 
 # Initial constants for straight line mode
 #        self.pidc = PID.PID(0.5, 0.0, 0.1)
@@ -29,10 +31,9 @@ class StraightLine:
 # straight line, fast: mid -0.5, range -0.2
 # straight line, batsh*t crazy: mid -0.9, range -0.1
 
-        speed_mid = -0.4
-        speed_range = -0.2
 
-        distance_midpoint = 200.0
+
+        distance_midpoint = 450.0
         distance_range = 150.0
         error = (sensorvalue - distance_midpoint)
         self.pidc.update(error, False)  # don't ignore D
@@ -43,11 +44,11 @@ class StraightLine:
         print("PID out: %f" % deviation)
 
         if self.follow_left:
-            leftspeed = (speed_mid - (c_deviation * speed_range))
-            rightspeed = (speed_mid + (c_deviation * speed_range))
+            leftspeed = (self.speed_mid - (c_deviation * self.speed_range))
+            rightspeed = (self.speed_mid + (c_deviation * self.speed_range))
         else:
-            leftspeed = (speed_mid + (c_deviation * speed_range))
-            rightspeed = (speed_mid - (c_deviation * speed_range))
+            leftspeed = (self.speed_mid + (c_deviation * self.speed_range))
+            rightspeed = (self.speed_mid - (c_deviation * self.speed_range))
 
         return leftspeed, rightspeed
 
@@ -60,6 +61,8 @@ class StraightLine:
 
         side_prox = 0
 
+        speedup = [2,4,6,8,10]
+
         while not self.killed and self.ticks < tick_limit and side_prox != -1:
             prev_prox = side_prox
             d_left = self.core.read_sensor(0)
@@ -68,17 +71,22 @@ class StraightLine:
 
             # Which wall are we following?
             if self.follow_left:
-                side_prox = d_left # 0:Left, 2: right
+                side_prox = d_left  # 0:Left, 2: right
             else:
                 side_prox = d_right
             front_prox = d_front
 
             # Have we fallen out of the end of the course?
-            if d_left > 400 and d_right > 400:
-                self.killed = True
-                break
+            # if d_left > 500 and d_right > 400:
+            #    self.killed = True
+            #    break
 
-            print("Distance is %d" % (side_prox) )
+            # Speed up as we go
+            if self.ticks in speedup:
+                self.speed_mid += 0.1
+                self.speed_range += 0.1
+
+            print("Distance is %d" % (side_prox))
 
             leftspeed = 0
             rightspeed = 0
@@ -87,6 +95,7 @@ class StraightLine:
 
             # Safety
             if front_prox < 300:
+                print("Safety stop")
                 self.killed = True
 
             self.core.throttle(leftspeed, rightspeed)
@@ -95,7 +104,7 @@ class StraightLine:
             self.ticks = self.ticks + 1
             time.sleep(self.tick_time)
 
-        print("Timeout after %d seconds" % (self.ticks * self.tick_time))
+        print("Stop after %d seconds, %r " % (self.ticks * self.tick_time, self.killed))
 
         self.core.stop()
 

@@ -112,7 +112,7 @@ class rc:
         right_motor_orig_scale_factor = right_motor_esc.scale_factor
 
         # Change motors to 1/4 speed
-        speed_factor = 0.25
+        speed_factor = 0.5
         left_motor_esc.set_scale_factor(speed_factor)
         right_motor_esc.set_scale_factor(speed_factor)
 
@@ -149,7 +149,7 @@ class rc:
             # 1 = linear response (twitchy)
             # 3 = very slow in central portion of stick movement
             # At 2.0, half the stick travel means 25% throttle
-            y_exp = 2.0
+            y_exp = 1.8
 
             # How much expo to apply to steering input
             x_exp = 1.5
@@ -158,22 +158,22 @@ class rc:
             speed_scale = 1.0
 
             # What proportion of full steering speed to use at throttle = 0
-            steer_scale = 1.0
+            steer_scale = 0.8
 
             # What proportion of full steering speed to use at full throttle
-            steer_softening = 0.5
+            steer_softening = 0.0
 
             # speed_input and steer_input are expo'd values of stick movement,
-            if( l_throttle >= 0 ):
+            if(l_throttle >= 0):
                 speed_input = pow(l_throttle, y_exp)
             else:
-                speed_input = 0 - (pow(0-l_throttle, y_exp))
+                speed_input = 0 - (pow(0 - l_throttle, y_exp))
             speed_input = speed_input * speed_scale
 
-            if( r_steering >= 0 ):
+            if(r_steering >= 0):
                 steer_input = pow(r_steering, x_exp)
             else:
-                steer_input = 0 - (pow(0-r_steering, x_exp))
+                steer_input = 0 - (pow(0 - r_steering, x_exp))
             steer_input = steer_input * steer_scale
 
             # Reduce steering input at high speed to avoid crazy behaviour
@@ -215,9 +215,9 @@ class rc:
 
             if self.core_module:
                 if self.tank:
-                    self.core_module.throttle(c_l_motor, c_r_motor)
-                else:
                     self.core_module.throttle(l_throttle, r_throttle)
+                else:
+                    self.core_module.throttle(c_l_motor, c_r_motor)
 
             print("Motors %0.2f, %0.2f" % (c_l_motor, c_r_motor))
 

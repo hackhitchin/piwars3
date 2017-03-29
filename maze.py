@@ -8,12 +8,12 @@ class Maze:
         self.killed = False
         self.core = core_module
         self.ticks = 0
-        self.tick_time = 0.1 # How many seconds per control loop
-        self.time_limit = 16 # How many seconds to run for
+        self.tick_time = 0.1  # How many seconds per control loop
+        self.time_limit = 16  # How many seconds to run for
         self.follow_left = True
         self.switched_wall = False
 
-# sensible defaults for maze: 
+# sensible defaults for maze:
 #        self.pidc = PID.PID(0.5, 0.0, 0.1)
         self.pidc = PID.PID(0.5, 0.0, 0.1)
 
