@@ -3,6 +3,7 @@
 import socket
 import os
 import sys
+import signal
 
 import time
 from dotstar import Adafruit_DotStar
@@ -10,6 +11,31 @@ import atexit
 import thread
 
 import effect
+
+def quit(signal, data):
+	sys.exit()
+
+# Daemonise
+if not sys.argv.count('-f'):
+	# Daemonise if not called with -f
+	pid = os.fork()
+	if pid != 0:
+		sys.exit()
+	os.setsid()
+	sys.stdin=open(os.devnull, 'r')
+	sys.stdout=open('/tmp/light-log', 'a', 1)
+	sys.stderr=open('/tmp/light-log', 'a', 1)
+	signal.signal(signal.SIGHUP, signal.SIG_IGN)
+	signal.signal(signal.SIGINT, quit)
+	signal.signal(signal.SIGQUIT, quit)
+	signal.signal(signal.SIGTERM, quit)
+	signal.signal(signal.SIGUSR1, signal.SIG_IGN)
+	signal.signal(signal.SIGUSR2, signal.SIG_IGN)
+	os.chdir('/')
+	pid = os.fork()
+	if pid != 0:
+		sys.exit()
+
 
 # Low priority
 os.nice(10)
@@ -76,10 +102,12 @@ while True:
 			wait = False
 			now = False
 			if data:
-				print data
+				print 'Received:', data
 				try:
 					vals = data.split()
 					cmd = vals.pop(0).lower()
+					if cmd == 'die':
+						sys.exit()
 					if cmd == 'ping':
 						connection.sendall('OK')
 						continue
@@ -128,4 +156,4 @@ while True:
 		try:
 			connection.close()
 		except IOError as e:
-			print 'e'	
+			print e	

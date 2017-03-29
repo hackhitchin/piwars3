@@ -15,11 +15,8 @@ def send(command):
 		sock.sendall('ping')
 		data = sock.recv(1024)
 		if data == 'OK':
-			print "Connected"
-			print command
 			sock.sendall(command)
 			data = sock.recv(1024)
-			print data
 		else:
 			print "Connection failed"
 		sock.close()

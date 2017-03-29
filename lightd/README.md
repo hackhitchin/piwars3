@@ -25,6 +25,7 @@ Commands:
 * **twinkle**		Random twinkling
 * **police**		Attempt to imitate an emergency vehicle's lights
 * **off**		All lights off
+* **die**		Kill the daemon
 
 
 Examples:
