@@ -15,6 +15,8 @@ import effect
 def quit(signal, data):
 	sys.exit()
 
+os.umask(0011)
+
 # Daemonise
 if not sys.argv.count('-f'):
 	# Daemonise if not called with -f
