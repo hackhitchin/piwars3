@@ -3,6 +3,7 @@ import time
 import core
 from numpy import interp, clip
 
+
 class LineFollower:
     def __init__(self, core_module, oled):
         """Class Constructor"""
