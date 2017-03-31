@@ -5,12 +5,13 @@ from lib_oled96 import ssd1306
 
 
 class rc:
-    def __init__(self, core_module, wm, oled):
+    def __init__(self, core_module, wm, oled, accessory):
         """Class Constructor"""
         self.killed = False
         self.core_module = core_module
         self.wiimote = wm
         self.oled = oled
+        self.accessoryclass = accessory
 
         self.ticks = 0
 
@@ -100,6 +101,12 @@ class rc:
     def run(self):
         """ Main Challenge method. Has to exist and is the
             start point for the threaded challenge. """
+        # If the accessory has been specified, create an object instance of it
+        if self.accessoryclass:
+            accessory = self.accessoryclass()
+        else:
+            accessory = None
+
         nTicksSinceLastMenuUpdate = -1
         nTicksBetweenMenuUpdates = 10  # 10*0.05 seconds = every half second
 
@@ -149,6 +156,31 @@ class rc:
                 nTicksSinceLastMenuUpdate = 0
             else:
                 nTicksSinceLastMenuUpdate = nTicksSinceLastMenuUpdate + 1
+
+            # Check buttons and pass to accessory, if present
+            if accessory:
+                try:
+                    classic_buttons_state = self.wiimote.get_classic_buttons()
+                except:
+                    print("Failed to get buttons")
+
+                if classic_buttons_state is not None:
+                    if classic_buttons_state & cwiid.CLASSIC_BTN_UP:
+                        accessory.up()
+                    if classic_buttons_state & cwiid.CLASSIC_BTN_DOWN:
+                        accessory.down()
+                    if classic_buttons_state & cwiid.CLASSIC_BTN_LEFT:
+                        accessory.left()
+                    if classic_buttons_state & cwiid.CLASSIC_BTN_RIGHT:
+                        accessory.right()
+                    if classic_buttons_state & cwiid.CLASSIC_BTN_A:
+                        accessory.btn_a()
+                    if classic_buttons_state & cwiid.CLASSIC_BTN_B:
+                        accessory.btn_b()
+                    if classic_buttons_state & cwiid.CLASSIC_BTN_X:
+                        accessory.btn_x()
+                    if classic_buttons_state & cwiid.CLASSIC_BTN_Y:
+                        accessory.btn_y()
 
             # Sleep between loops to allow other stuff to
             # happen and not over burden Pi and Arduino.
