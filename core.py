@@ -70,13 +70,16 @@ class Core():
         # Create a list of servo's
         self.servos = dict()
         # Add Motor Servo's. NOTE: Left motor esc is reversed.
+        # Left motor, high numbers mean backwards
         self.servos[ServoEnum.LEFT_MOTOR_ESC] = [
             servo_control.Servo_Controller(
                 min=800, mid=1300, max=1800, bReverse=True
             ), LEFT_MOTOR_ESC_PIN, 'Left Motor']
+
+        # Right motor, high numbers mean forwards
         self.servos[ServoEnum.RIGHT_MOTOR_ESC] = [
             servo_control.Servo_Controller(
-                min=810, mid=1310, max=1810, bReverse=False
+                min=820, mid=1320, max=1820, bReverse=False
             ), RIGHT_MOTOR_ESC_PIN, 'Right Motor']
 
         # Add Auxilary servo's. NOTE: Aux esc's are not reversed.

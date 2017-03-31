@@ -1,91 +1,132 @@
-import core
+import serial
 import time
-import PID
+import core
+from numpy import interp, clip
 
-
-class LineFollow:
-    def __init__(self, core_module):
+class LineFollower:
+    def __init__(self, core_module, oled):
         """Class Constructor"""
-        self.killed = False
         self.core = core_module
-        self.ticks = 0
-        self.tick_time = 0.1 # How many seconds per control loop
-        self.time_limit = 60 # How many seconds to run for
-        self.follow_left = True
+        self.oled = oled
+        self.killed = False
+        self.ser = serial.Serial(
+            "/dev/ttyUSB0",
+            baudrate=9600,
+            parity=serial.PARITY_NONE,
+            stopbits=serial.STOPBITS_ONE,
+            bytesize=serial.EIGHTBITS,
+            writeTimeout=0,
+            timeout=10,
+            rtscts=False,
+            dsrdtr=False,
+            xonxoff=False)
 
-# Initial constants for line following mode
-#        self.pidc = PID.PID(0.5, 0.0, 0.1)
-        self.pidc = PID.PID(0.5, 0.0, 0.1)
+        # Rough calibration values
+        self.black = 512
+        self.white = 3000
+        self.weights = [-3.5, -2.5, -1.5, -0.5, 0.5, 1.5, 2.5, 3.5];
+
+    def show_sensor_readout(self, line_sensor):
+        """ Show motor/aux config on OLED display """
+        if self.oled is not None:
+            # Format the speed to 2dp
+            if len(line_sensor) == 8:
+                message = ("{}, "
+                           "{}, "
+                           "{}, "
+                           "{}, "
+                           "{}, "
+                           "{}, "
+                           "{}, "
+                           "{}").format(
+                    line_sensor[0],
+                    line_sensor[1],
+                    line_sensor[2],
+                    line_sensor[3],
+                    line_sensor[4],
+                    line_sensor[5],
+                    line_sensor[6],
+                    line_sensor[7]
+                )
+
+                self.oled.cls()  # Clear Screen
+                self.oled.canvas.text((10, 10), message, fill=1)
+                # Now show the mesasge on the screen
+                self.oled.display()
 
     def stop(self):
         """Simple method to stop the RC loop"""
         self.killed = True
 
-    def decide_speeds(self, sensorvalue):
-        """ Set up return values at the start"""
-        leftspeed = 0
-        rightspeed = 0
-
-# line follow, cautious: mid -0.2, range -0.2
-
-        speed_mid = -0.2
-        speed_range = -0.2
-
-        # Sensorvalue should be deviation from the centre point
-        error = sensorvalue
-        self.pidc.update(error, False)  # don't ignore D
-
-        deviation = self.pidc.output
-        c_deviation = max(-1.0, min(1.0, deviation))
-
-        print("PID out: %f" % deviation)
-
-        leftspeed = (speed_mid - (c_deviation * speed_range))
-        rightspeed = (speed_mid + (c_deviation * speed_range))
-
-        return leftspeed, rightspeed
-
     def run(self):
-        print("Start run")
-        """Read a sensor and set motor speeds accordingly"""
-        self.core.enable_motors(True)
+        """ Main Challenge method. Has to exist and is the
+            start point for the threaded challenge. """
+        nTicksSinceLastMenuUpdate = -1
+        nTicksBetweenMenuUpdates = 10  # 10*0.05 seconds = every half second
 
-        tick_limit = self.time_limit / self.tick_time
+        # Loop indefinitely, or until this thread is flagged as stopped.
+        while not self.killed:
+            # Send empty command to arduino to invoke a 'read'
+            command = "[]\n"
+            self.ser.write(command)
+            # Read line from arduino
+            result_str = self.ser.readline()
+            print(result_str)
 
-        side_prox = 0
+            # read sensor values as string from arduino.
+            sensor_values = result_str.split(',')
+            # Convert list of strings to list of ints
 
-        while not self.killed and self.ticks < tick_limit and side_prox != -1:
-            # SENSOR LOGIC HERE
-            # READ THE EIGHT ANALOG VALUES AND FIGURE OUT WHERE THE LINE IS?
+            if len(sensor_values) != 8:
+                sensor_values = [-1,-1,-1,-1,-1,-1,-1,-1]
 
-            lineposition = core.read_line_sensor()
+            sensor_values = map(int, sensor_values)
+            print("Sensor values:")
+            print sensor_values
 
-            print("Line is %d" % (lineposition) )
+            deviation = algorithm(sensor_values)
+            print("Deviation is %d" % deviation)
+            # pause for brief time.
+            time.sleep(0.05)
 
-            leftspeed = 0
-            rightspeed = 0
+            # Show sensor readout periodically.
+            if (nTicksSinceLastMenuUpdate == -1 or
+               nTicksSinceLastMenuUpdate >= nTicksBetweenMenuUpdates):
+                self.show_sensor_readout(sensor_values)
+                nTicksSinceLastMenuUpdate = 0
+            else:
+                nTicksSinceLastMenuUpdate = nTicksSinceLastMenuUpdate + 1
 
-            leftspeed, rightspeed = self.decide_speeds(side_prox)
+        if self.ser:
+            self.ser.close()
 
-            self.core.throttle(leftspeed, rightspeed)
-            print("Motors %f, %f" % (leftspeed, rightspeed))
+    def algorithm(sensor_values):
+        average_position = 0
 
-            self.ticks = self.ticks + 1
-            time.sleep(self.tick_time)
+        # Turn light values (3000 for white, 500 for black) into a simple weight 0-1
+        # So one completely black sensor would return that sensor position
+        calibrated_sensor_values = map(weight_sensor, sensor_values)
 
-        print("Timeout after %d seconds" % (self.ticks * self.tick_time))
+        # For each 
+        for i in range(0,9):
+            average_position += self.weights[i] * calibrated_sensor_values[i]
 
-        self.core.stop()
+        return average_position
+
+    def weight_sensor(value):
+        return numpy.interp(value, [white, black], [0, 1])
+
 
 
 if __name__ == "__main__":
-    core = core.Core()
-    follower = LineFollow(core)
+    core = core.Core(None)
+    line = LineFollower(core)
     try:
-        follower.run()
+        line.run()
     except (KeyboardInterrupt) as e:
         # except (Exception, KeyboardInterrupt) as e:
         # Stop any active threads before leaving
-        follower.stop()
-        core.stop()
+        core.set_neutral()
+        if line.ser:
+            line.ser.close()
         print("Quitting")

@@ -67,7 +67,7 @@ class launcher:
             (Mode.MODE_CALIBRATION, "Calibration")
         ))
         self.current_mode = Mode.MODE_NONE
-        self.menu_mode = Mode.MODE_RC
+        self.menu_mode = Mode.MODE_SPEED
 
         # Create oled object, nominating the correct I2C bus, default address
         # Note: Set to None if you need to disable screen
