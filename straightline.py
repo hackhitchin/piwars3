@@ -10,7 +10,7 @@ class StraightLine:
         self.core = core_module
         self.ticks = 0
         self.tick_time = 0.05  # How many seconds per control loop
-        self.time_limit = 0.76  # How many seconds to run for
+        self.time_limit = 1.0  # How many seconds to run for
         self.follow_left = False
 
         # Initial speed
@@ -34,8 +34,7 @@ class StraightLine:
         # 0 tick = starting pid/speeds
         self.speed_dict[0] = (0.0, 0.0, 0.0, 0.4, 0.5)
         self.speed_dict[5] = (0.33, 0.0, 0.1, 1.0, 1.0)
-        self.speed_dict[15] = (0.33, 0.0, 0.1, 0.4, 0.4)
-        self.speed_dict[20] = (0.33, 0.0, 0.1, 0.2, 0.2)
+        # self.speed_dict[20] = (0.33, 0.0, 0.1, 0.5, 0.5)
         self.speed_dict[25] = (0.33, 0.0, 0.1, 0.2, 0.2)
 
     def stop(self):
