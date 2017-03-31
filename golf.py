@@ -1,6 +1,6 @@
 
 
-import accessory
+from accessory import Accessory
 
 class Golf(Accessory):
 	'''Control the golf club

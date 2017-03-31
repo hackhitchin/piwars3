@@ -1,6 +1,6 @@
 
 
-import accessory
+from accessory import Accessory
 
 class Skittles(Accessory):
 	'''Control the skittles launcher
