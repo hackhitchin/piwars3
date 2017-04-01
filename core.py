@@ -8,6 +8,24 @@ from RPIO import PWM
 from ctypes import *
 from enum import Enum
 
+""" GPIO number to pin mapping:
+GPIO 18 = pin 12
+GPIO 15 = pin 10
+GPIO 14 = pin 8
+GPIO 17 = pin 11
+GPIO 27 = pin 13
+GPIO  9 = pin 21
+GPIO 25 = pin 22
+GPIO 22 = pin 15
+GPIO 23 = pin 16
+GPIO 24 = pin 18
+
+Stripboard:
+Left servo 16
+Mid servo 15
+Right servo 18
+"""
+
 LIDAR_PINS = [18, 15, 14]
 LIDAR_LEFT = 0
 LIDAR_FRONT = 1
@@ -16,16 +34,19 @@ LIDAR_RIGHT = 2
 LEFT_MOTOR_ESC_PIN = 17
 RIGHT_MOTOR_ESC_PIN = 27
 
-LEFT_AUX_ESC_PIN = 0
-RIGHT_AUX_ESC_PIN = 0
+LEFT_AUX_ESC_PIN = 9
+RIGHT_AUX_ESC_PIN = 25
 
-LEFT_FLINGER_ESC_PIN = 0
-RIGHT_FLINGER_ESC_PIN = 0
+LEFT_FLINGER_ESC_PIN = 9
+RIGHT_FLINGER_ESC_PIN = 25
 
-LEFT_FLINGER_SERVO_PIN = 0
-RIGHT_FLINGER_SERVO_PIN = 0
+LEFT_FLINGER_SERVO_PIN = 23
+RIGHT_FLINGER_SERVO_PIN = 24  # not working?
 
-WINCH_SERVO_PIN = 0
+WINCH_SERVO_PIN = 22
+
+LEFT_GOLF_SERVO_PIN = 23
+RIGHT_GOLF_SERVO_PIN = 24  # not working?
 
 
 class ServoEnum(Enum):
@@ -89,13 +110,14 @@ class Core():
             ), LEFT_FLINGER_SERVO_PIN, 'Left Flinger Servo']
         self.servos[ServoEnum.RIGHT_FLINGER_SERVO] = [
             servo_control.Servo_Controller(
-                min=800, mid=1300, max=1800, bReverse=False
+                min=800, mid=1300, max=1800, bReverse=True
             ), RIGHT_FLINGER_SERVO_PIN, 'Right Flinger Servo']
 
         # Add Auxilary servo's. NOTE: Aux 4 servo is not reversed.
-        self.servos[ServoEnum.WINCH_SERVO] = [servo_control.Servo_Controller(
-            min=800, mid=1300, max=1800, bReverse=False
-        ), WINCH_SERVO_PIN, 'Winch']
+        self.servos[ServoEnum.WINCH_SERVO] = [
+            servo_control.Servo_Controller(
+                min=800, mid=1300, max=1800, bReverse=False
+            ), WINCH_SERVO_PIN, 'Winch']
 
         # Always set these to None for initialisation
         self.PWMservo = None

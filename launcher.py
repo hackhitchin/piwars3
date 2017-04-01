@@ -72,11 +72,12 @@ class launcher:
             (Mode.MODE_SKITTLES, "Skittles")
         ))
         self.current_mode = Mode.MODE_NONE
-        self.menu_mode = Mode.MODE_RC
+        self.menu_mode = Mode.MODE_GOLF
 
         # Create oled object, nominating the correct I2C bus, default address
         # Note: Set to None if you need to disable screen
-        self.oled = ssd1306(VL53L0X.i2cbus)
+        # self.oled = ssd1306(VL53L0X.i2cbus)
+        self.oled = None
 
     def stop_threads(self):
         """ Single point of call to stop any RC or Challenge Threads """
@@ -156,9 +157,9 @@ class launcher:
             logging.info("Maze Mode")
         elif self.menu_mode == Mode.MODE_CALIBRATION:
             self.start_calibration_mode()
-        elif self.menu_mode == Mode.GOLF:
+        elif self.menu_mode == Mode.MODE_GOLF:
             self.start_rc_mode(accessory = Golf)
-        elif self.menu_mode == Mode.SKITTLES:
+        elif self.menu_mode == Mode.MODE_SKITTLES:
             self.start_rc_mode(accessory = Skittles)
 
     @debounce(0.25)

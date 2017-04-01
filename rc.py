@@ -2,6 +2,7 @@ import core
 from core import ServoEnum
 import time
 from lib_oled96 import ssd1306
+import cwiid
 
 
 class rc:
@@ -102,8 +103,11 @@ class rc:
         """ Main Challenge method. Has to exist and is the
             start point for the threaded challenge. """
         # If the accessory has been specified, create an object instance of it
+
+        print("Initing accessory")
         if self.accessoryclass:
-            accessory = self.accessoryclass(self.core)
+            print("We have it")
+            accessory = self.accessoryclass(self.core_module)
         else:
             accessory = None
 
@@ -117,7 +121,7 @@ class rc:
         right_motor_orig_scale_factor = right_motor_esc.scale_factor
 
         # Change motors to 1/4 speed
-        speed_factor = 0.25
+        speed_factor = 0.55
         left_motor_esc.set_scale_factor(speed_factor)
         right_motor_esc.set_scale_factor(speed_factor)
 
