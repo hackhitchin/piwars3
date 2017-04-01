@@ -103,7 +103,7 @@ class rc:
             start point for the threaded challenge. """
         # If the accessory has been specified, create an object instance of it
         if self.accessoryclass:
-            accessory = self.accessoryclass()
+            accessory = self.accessoryclass(self.core)
         else:
             accessory = None
 

@@ -1,29 +1,31 @@
 
-class Accessory:
+class Accessory(object):
         '''Class for remotely-controlled accessories; ie. the golf club or ball flinger'''
+        def __init(self, core)__:
+            self.core = core
 
         # By default, all button presses do nothing
 
-        def up():
+        def up(self):
             '''The up button on the 4-way direction pad'''
 
-        def down():
+        def down(self):
             '''The up button on the 4-way direction pad'''
 
-        def left():
+        def left(self):
             '''The up button on the 4-way direction pad'''
 
-        def right():
+        def right(self):
             '''The up button on the 4-way direction pad'''
 
-        def btn_a():
+        def btn_a(self):
             '''The A button'''
 
-        def btn_b():
+        def btn_b(self):
             '''The B button'''
 
-        def btn_x():
+        def btn_x(self):
             '''The X button'''
 
-        def btn_y():
+        def btn_y(self):
             '''The Y button'''
