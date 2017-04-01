@@ -10,7 +10,7 @@ class StraightLine:
         self.core = core_module
         self.ticks = 0
         self.tick_time = 0.05  # How many seconds per control loop
-        self.time_limit = 1.0  # How many seconds to run for
+        self.time_limit = 1.5  # How many seconds to run for
         self.follow_left = False
 
         # Initial speed
@@ -23,19 +23,27 @@ class StraightLine:
         self.skew_left = 1  # for guided driving
 
         # Initial constants for straight line mode
-        # self.pidc = PID.PID(0.5, 0.0, 0.1)
         self.pidc = PID.PID(0.33, 0.0, 0.1)  # works well at 0.4
-        # self.pidc = PID.PID(0.045, 0.0, 0.06)  # 0.5 speed?
 
         # Create dictionary for left/right speed
         self.speed_dict = dict()
         # p, i, d, left_speed, right_speed
         # NOTE: 5 ticks per 1/4 second.
         # 0 tick = starting pid/speeds
-        self.speed_dict[0] = (0.0, 0.0, 0.0, 0.4, 0.5, 0.4)
-        self.speed_dict[5] = (0.33, 0.0, 0.1, 1.0, 1.0, 0.7)
+
+        # self.speed_dict[5] = (0.33, 0.0, 0.15, 0.4, 0.4, 0.4) works well all the way  
+
+        # Somehow this set just worked like magic and I'm not questioning it
+        #self.speed_dict[0] = (0.0, 0.0, 0.0, 0.4, 0.4, 0.4)
+        #self.speed_dict[5] = (0.20, 0.0, 0.12, 0.5, 0.5, 0.4)
+        #self.speed_dict[15] = (0.20, 0.0, 0.09, 0.5, 0.5, 0.4)
+        #self.speed_dict[22] = (0.33, 0.0, 0.1, 0.2, 0.2, 0.0)                
+
+        self.speed_dict[0] = (0.0, 0.0, 0.0, 0.4, 0.4, 0.4)
+        self.speed_dict[5] = (0.20, 0.0, 0.12, 0.5, 0.5, 0.4)
+        self.speed_dict[15] = (0.20, 0.0, 0.09, 0.8, 0.8, 1.2)
         # self.speed_dict[20] = (0.33, 0.0, 0.1, 0.5, 0.5, 0.4)
-        self.speed_dict[25] = (0.33, 0.0, 0.1, 0.2, 0.2, 0.4)
+        self.speed_dict[22] = (0.33, 0.0, 0.1, 0.2, 0.2, 0.0)
 
     def stop(self):
         """Simple method to stop the RC loop"""
@@ -51,7 +59,7 @@ class StraightLine:
         # straight line, batsh*t crazy: mid -0.9, range -0.1
 
         distance_midpoint = 190.0
-        distance_range = 150.0  # works for 0.4 speed
+        distance_range = 200.0  # works for 0.4 speed
         error = (sensorvalue - distance_midpoint)
         self.pidc.update(error, False)  # don't ignore D
 
@@ -61,11 +69,11 @@ class StraightLine:
         print("PID out: %f" % deviation)
 
         if self.follow_left:
-            leftspeed = (self.left_speed - (c_deviation * self.speed_range))
-            rightspeed = (self.right_speed + (c_deviation * self.speed_range))
-        else:
             leftspeed = (self.left_speed + (c_deviation * self.speed_range))
             rightspeed = (self.right_speed - (c_deviation * self.speed_range))
+        else:
+            leftspeed = (self.left_speed - (c_deviation * self.speed_range))
+            rightspeed = (self.right_speed + (c_deviation * self.speed_range))
 
         return leftspeed, rightspeed
 
@@ -131,6 +139,7 @@ class StraightLine:
         )
 
         self.core.stop()
+        self.core.set_neutral( core.ServoEnum.LEFT_AUX_ESC, core.ServoEnum.RIGHT_AUX_ESC)
 
 
 if __name__ == "__main__":

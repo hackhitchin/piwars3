@@ -73,7 +73,7 @@ class Core():
         # Left motor, high numbers mean backwards
         self.servos[ServoEnum.LEFT_MOTOR_ESC] = [
             servo_control.Servo_Controller(
-                min=800, mid=1300, max=1800, bReverse=True
+                min=790, mid=1290, max=1790, bReverse=True
             ), LEFT_MOTOR_ESC_PIN, 'Left Motor']
 
         # Right motor, high numbers mean forwards
