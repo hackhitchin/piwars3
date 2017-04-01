@@ -32,10 +32,10 @@ class StraightLine:
         # p, i, d, left_speed, right_speed
         # NOTE: 5 ticks per 1/4 second.
         # 0 tick = starting pid/speeds
-        self.speed_dict[0] = (0.0, 0.0, 0.0, 0.4, 0.5)
-        self.speed_dict[5] = (0.33, 0.0, 0.1, 1.0, 1.0)
-        # self.speed_dict[20] = (0.33, 0.0, 0.1, 0.5, 0.5)
-        self.speed_dict[25] = (0.33, 0.0, 0.1, 0.2, 0.2)
+        self.speed_dict[0] = (0.0, 0.0, 0.0, 0.4, 0.5, 0.4)
+        self.speed_dict[5] = (0.33, 0.0, 0.1, 1.0, 1.0, 0.7)
+        # self.speed_dict[20] = (0.33, 0.0, 0.1, 0.5, 0.5, 0.4)
+        self.speed_dict[25] = (0.33, 0.0, 0.1, 0.2, 0.2, 0.4)
 
     def stop(self):
         """Simple method to stop the RC loop"""
@@ -60,12 +60,6 @@ class StraightLine:
 
         print("PID out: %f" % deviation)
 
-        # if self.follow_left:
-        #     leftspeed = (self.speed_mid - (c_deviation * self.speed_range))
-        #     rightspeed = (self.speed_mid + (c_deviation * self.speed_range))
-        # else:
-        #     leftspeed = (self.speed_mid + (c_deviation * self.speed_range))
-        #     rightspeed = (self.speed_mid - (c_deviation * self.speed_range))
         if self.follow_left:
             leftspeed = (self.left_speed - (c_deviation * self.speed_range))
             rightspeed = (self.right_speed + (c_deviation * self.speed_range))
@@ -83,46 +77,26 @@ class StraightLine:
         tick_limit = self.time_limit / self.tick_time
         side_prox = 0
 
-        # speedup = [2,3,4,5,6,7,8]
-        speedup = []
-
-        use_lidar = True
-
-        self.core.throttle(0.4, 0.4)
-        # print("Motors %f, %f" % (leftspeed, rightspeed))
-
-        time.sleep(0.2)
-
         while not self.killed and self.ticks < tick_limit and side_prox != -1:
-            # prev_prox = side_prox
-            if use_lidar:
-                d_left = self.core.read_sensor(2)
-                # d_front = self.core.read_sensor(1)
-                d_right = self.core.read_sensor(0)
+            d_left = self.core.read_sensor(2)
+            # d_front = self.core.read_sensor(1)
+            d_right = self.core.read_sensor(0)
 
-                # Which wall are we following?
-                if self.follow_left:
-                    side_prox = d_left  # 0:Left, 2: right
-                else:
-                    side_prox = d_right
-                # front_prox = d_front
+            # Which wall are we following?
+            if self.follow_left:
+                side_prox = d_left  # 0:Left, 2: right
             else:
-                side_prox = 123
-                # front_prox = 123
+                side_prox = d_right
+                # front_prox = d_front
 
             # Have we fallen out of the end of the course?
             # if d_left > 500 and d_right > 400:
             #    self.killed = True
             #    break
 
-            # Speed up as we go
-            if self.ticks in speedup:
-                # self.speed_mid += 0.1
-                self.speed_range += 0.1
-
             # Try to get new PID values for current time.
             try:
-                kp, ki, kd, ls, rs = self.speed_dict[self.ticks]
+                kp, ki, kd, ls, rs, self.speed_range = self.speed_dict[self.ticks]
                 print("Speed Change L" + str(ls) + " R" + str(rs))
                 self.pidc.setKp(kp)
                 self.pidc.setKi(ki)
@@ -138,16 +112,7 @@ class StraightLine:
 
             print("Distance is %d" % (side_prox))
 
-            leftspeed = 0
-            rightspeed = 0
-
-            if use_lidar:
-                leftspeed, rightspeed = self.decide_speeds(side_prox)
-            else:
-                leftspeed = min(self.left_speed * self.skew_left, 1.0)
-                rightspeed = min(self.right_speed, 1.0)
-                # leftspeed = min(self.speed_mid * self.skew_left, 1.0)
-                # rightspeed = min(self.speed_mid, 1.0)
+            leftspeed, rightspeed = self.decide_speeds(side_prox)
 
             # Safety
             # if use_lidar and front_prox < 300:
