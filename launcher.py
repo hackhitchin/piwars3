@@ -365,6 +365,8 @@ class launcher:
 
         # Never stop looking for wiimote.
         while not self.killed:
+            # Indicate lackof Bluetooth
+            lights.send('flash 0 0 128 10')
             if self.oled is not None:
                 # Show state on OLED display
                 self.oled.cls()  # Clear screen
@@ -385,6 +387,10 @@ class launcher:
             except WiimoteException:
                 logging.error("Could not connect to wiimote. please try again")
 
+            # Show that we have Bluetooth
+            lights.send('now on 0 0 255')
+            twinkle = False
+
             # Show state on OLED display
             self.show_menu()
 
@@ -404,16 +410,23 @@ class launcher:
                         # Kill any previous Challenge / RC mode
                         # NOTE: will ALWAYS work
                         self.stop_threads()
+                        twinkle = False
 
                     if (buttons_state & cwiid.BTN_UP and
                        self.challenge is None):
                         # Only works when NOT in a challenge
                         self.menu_up()
+                        if not twinkle:
+                            lights.send('twinkle')
+                            twinkle = True
 
                     if (buttons_state & cwiid.BTN_DOWN and
                        self.challenge is None):
                         # Only works when NOT in a challenge
                         self.menu_down()
+                        if not twinkle:
+                            lights.send('twinkle')
+                            twinkle = True
 
                 if classic_buttons_state is not None:
                     if (classic_buttons_state & cwiid.CLASSIC_BTN_ZL or

@@ -1,6 +1,7 @@
 import core
 import time
 import PID
+import lights
 
 class Maze:
     def __init__(self, core_module, wm, oled):
@@ -54,6 +55,8 @@ class Maze:
 
     def run(self):
         print("Start run")
+	# Set light
+	lights.send('on 0 255 0 0')
         """Read a sensor and set motor speeds accordingly"""
         # self.core.enable_lidar()
         self.core.enable_motors(True)
@@ -70,6 +73,11 @@ class Maze:
             d_front = self.core.read_sensor(1) - 150
             d_right = self.core.read_sensor(2)
 
+            # Find minimum distance to a wall and set light based on that
+            min_d = min(d_left, d_right, d_front+150)
+            bright_d = min(max(min_d, 0), 200)/200.0
+            lights.send('data %f' % bright_d)
+
             # Which wall are we following?
             if self.follow_left:
                 side_prox = d_left # 0:Left, 2: right
@@ -80,6 +88,7 @@ class Maze:
             # Have we fallen out of the end of the course?
             if d_left > 400 and d_right > 400:
                 print("End of course, of course")
+		lights.send('strobe')
                 self.killed = True
                 break
 
