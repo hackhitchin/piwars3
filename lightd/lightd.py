@@ -43,7 +43,7 @@ if not sys.argv.count('-f'):
 os.nice(10)
 
 # Define pixel strip
-numpixels = 60 # Number of LEDs in strip
+numpixels = 36 # Number of LEDs in strip
 strip   = Adafruit_DotStar(numpixels)           # Use SPI (pins 10=MOSI, 11=SCLK)
 
 strip.begin()           # Initialize pins for output

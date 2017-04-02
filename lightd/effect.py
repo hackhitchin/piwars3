@@ -16,7 +16,7 @@ class Effect(object):
 		self.frame = 0
 
 	def values(self):
-		return [(0,0,0)] * 60
+		return [(0,0,0)] * 36
 
 	def _nextobj(self, change = True):
 		if self.nextobj and (change or self.changenow):
@@ -75,7 +75,7 @@ class Pulse(Effect):
 
 	def values(self):
 		multiple = (1-math.cos(2*math.pi*self.frame/self.speed))/2
-		return [(int(self.r*multiple), int(self.g*multiple), int(self.b*multiple))] * 60
+		return [(int(self.r*multiple), int(self.g*multiple), int(self.b*multiple))] * 36
 
 	def nextframe(self):
 		if self.speed != self.targetspeed:
@@ -117,9 +117,9 @@ class Flash(Effect):
 
 	def values(self):
 		if self.on:
-			return [(self.r, self.g, self.b)] * 60
+			return [(self.r, self.g, self.b)] * 36
 		else:
-			return [(0,0,0)] * 60
+			return [(0,0,0)] * 36
 
 	def nextframe(self):
 		if self.speed != self.targetspeed:
@@ -154,7 +154,7 @@ class Hue(Effect):
 		self.frame += 1
 		hue = (self.frame%100)/100.0
 		(r,g,b) = colorsys.hsv_to_rgb(hue,1,1)
-		return [(int(r*255), int(g*255), int(b*255))] * 60
+		return [(int(r*255), int(g*255), int(b*255))] * 36
 
 
 class On(Effect):
@@ -169,7 +169,7 @@ class On(Effect):
 		self.multiple = 1
 
 	def values(self):
-		return [(int(self.r*self.multiple), int(self.g*self.multiple), int(self.b*self.multiple))] * 60
+		return [(int(self.r*self.multiple), int(self.g*self.multiple), int(self.b*self.multiple))] * 36
 
 	def setdata(self, data):
 		self.multiple = self._getfloat(data)
@@ -178,14 +178,14 @@ class On(Effect):
 class Twinkle(Effect):
 	def reset(self):
 		self.frame = 0
-		self.rgb1 = [[0,0,0]] * 60
-		self.rgb2 = [[0,0,0]] * 60
-		self.startframe = [0] * 60
-		self.endframe = [1] * 60
+		self.rgb1 = [[0,0,0]] * 36
+		self.rgb2 = [[0,0,0]] * 36
+		self.startframe = [0] * 36
+		self.endframe = [1] * 36
 
 	def values(self):
 		self.frame += 1
-		for i in range(60):
+		for i in range(36):
 			if(self.frame >= self.endframe[i]):
 				self.startframe[i] = self.frame
 				self.endframe[i] = self.frame + random.randint(25,50)
@@ -193,7 +193,7 @@ class Twinkle(Effect):
 				self.rgb2[i] = [random.random(), random.random(), random.random()]
 
 		leds = []
-		for led in range(60):
+		for led in range(36):
 			cols1 = self.rgb1[led]
 			cols2 = self.rgb2[led]
 			avg = (0.0 + self.frame - self.startframe[led])/(self.endframe[led] - self.startframe[led])
@@ -217,7 +217,7 @@ class Police(Effect):
 	def values(self):
 		self.frame = (self.frame + 1) % 16
 
-		leds = [(0,0,0)] * 60
+		leds = [(0,0,0)] * 36
 
 		if self.LSEQ[self.frame]:
 			leds[10] = (0,0,255)
@@ -259,7 +259,7 @@ class Strobe(Effect):
 				self.colours.append((int(r*255), int(g*255), int(b*255)))
 				self.leds.append(random.randint(0,59))
 
-		vals = [(0,0,0)] * 60
+		vals = [(0,0,0)] * 36
 
 		if self.frame % 2:
 			for i, led in enumerate(self.leds):
