@@ -374,7 +374,7 @@ class launcher:
         lights.send('strobe')
 
         self.challenge = \
-            LineFollower(self.core, self.wiimote, self.oled)
+            LineFollower(self.core, self.oled)
 
         # Create and start a new thread
         # running the remote control script
