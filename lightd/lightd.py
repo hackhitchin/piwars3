@@ -126,24 +126,31 @@ while True:
 						if(wait):
 							obj.setok(okfunc)
 						obj.setnext(pulse)
-					if cmd == 'hue':
+					elif cmd == 'hue':
 						wait = False		# No delay on this finishing
 						obj.setnext(effect.Hue())
-					if cmd == 'strobe':
+					elif cmd == 'strobe':
 						wait = False		# No delay on this finishing
 						obj.setnext(effect.Strobe())
-					if cmd == 'on':
+					elif cmd == 'on':
 						wait = False		# No delay on this finishing
 						obj.setnext(effect.On(int(vals.pop(0)), int(vals.pop(0)), int(vals.pop(0))))
-					if cmd == 'twinkle':
+					elif cmd == 'twinkle':
 						wait = False		# No delay on this finishing
 						obj.setnext(effect.Twinkle())		
-					if cmd == 'police':
+					elif cmd == 'police':
 						wait = False		# No delay on this finishing
 						obj.setnext(effect.Police())		
-					if cmd == 'off':
+					elif cmd == 'off':
 						wait = False		# No delay on this finishing
 						obj.setnext(effect.Off())		
+					elif cmd == 'data':
+						wait = False		# No delay on this finishing
+						obj.setdata(vals)
+					else:
+						connection.sendall('Error')
+						print "Unrecognised command"
+						continue
 	
 					if now:
 						obj.setnow()

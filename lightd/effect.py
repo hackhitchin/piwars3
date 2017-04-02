@@ -41,6 +41,25 @@ class Effect(object):
 	def setnow(self):
 		self.changenow = True
 
+	def setdata(self, data):
+		'''Ignore the data'''
+
+	def _getint(self, data):
+		'''Return the first int in the list, or 0 if none'''
+		try:
+			val = int(data.pop(0))
+		except:
+			val = 0
+		return val
+
+	def _getfloat(self, data):
+		'''Return the first float in the list, or 0 if none'''
+		try:
+			val = float(data.pop(0))
+		except:
+			val = 0.0
+		return val
+
 
 class Pulse(Effect):
 	def __init__(self, r,g,b):
@@ -49,13 +68,41 @@ class Pulse(Effect):
 		self.g = g
 		self.b = b
 
+	def reset(self):
+		super(Pulse, self).reset()
+		self.speed = 100
+		self.targetspeed = 100
+
 	def values(self):
-		multiple = (1-math.cos(2*math.pi*self.frame/100))/2
+		multiple = (1-math.cos(2*math.pi*self.frame/self.speed))/2
 		return [(int(self.r*multiple), int(self.g*multiple), int(self.b*multiple))] * 60
 
 	def nextframe(self):
+		if self.speed != self.targetspeed:
+			# Recalculate frame number for new speed so there's no sudden jump in light level
+			self.frame = int(self.frame*float(self.targetspeed)/float(self.speed))
+			self.speed = self.targetspeed
 		self.frame += 1
-		return self._nextobj((self.frame % 100) == 0)
+		return self._nextobj((self.frame % self.speed) == 0)
+
+	def setdata(self, data):
+		'''Set data
+		1 value = speed
+		3 values = r,g,b
+		4 values = r,g,b,speed'''
+		if len(data) == 1:
+			self.targetspeed = self._getint(data)
+			if self.targetspeed == 0:
+				self.targetspeed = 100	# Avoid /0 error on bad data
+		elif len(data) >= 3:
+			self.r = self._getint(data)
+			self.g = self._getint(data)
+			self.b = self._getint(data)
+			if len(data):
+				# If more data, assume it's a speed
+				self.setdata(data)
+
+
 
 
 class Hue(Effect):
@@ -73,8 +120,15 @@ class On(Effect):
 		self.g = g
 		self.b = b
 
+	def reset(self):
+		super(On, self).reset()
+		self.multiple = 1
+
 	def values(self):
-		return [(self.r,self.g,self.b)] * 60
+		return [(int(self.r*self.multiple), int(self.g*self.multiple), int(self.b*self.multiple))] * 60
+
+	def setdata(self, data):
+		self.multiple = self._getfloat(data)
 
 
 class Twinkle(Effect):
@@ -168,11 +222,6 @@ class Strobe(Effect):
 				vals[led] = self.colours[i]
 
 		return vals
-
-
-
-class Off(Effect):
-	'''Turns all the LEDs off'''
 
 
 

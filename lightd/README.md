@@ -26,14 +26,20 @@ Commands:
 * **police**		Attempt to imitate an emergency vehicle's lights
 * **hue**		Slowly move all LEDs through H element of HSV colour space
 * **strobe**		Repeatedly strobe 1-10 LEDs (random) a random colour each
+* **data x [y z ...]	Send data to the current light effect
 * **off**		All lights off
 * **die**		Kill the daemon
 
+Data:
+* **pulse** accepts either 1 integer, a new speed (default = 100, lower numbers are faster), 3 integers (a new RGB value) or 4 integers (R G B Speed)
+* **on** accepts a float between 0.0 and 1.0, which modifies the brightness of the specified RGB value
 
 Examples:
 * **pulse 255 0 0**		Pulse red
 * **pulse 0 255 0**		Switch to pulsing green when the red sequence finishes
-* **now pulse 0 0 255**	Switch to pulsing blue immediately
-* **wait on 0 255 0**		Steady green when the blue sequence finishes.
-* 			send() won't return until this happens
+* **now pulse 0 0 255**		Switch to pulsing blue immediately
+* **data 50** 			Pulse faster
+* **data 255 255 0 150**	Pulse slower and change to yellow
+* **wait on 0 255 0**		Steady green when the blue sequence finishes. send() won't return until this happens
+* **data 0.5**			Reduce brightness
 * **off**			Lights off
