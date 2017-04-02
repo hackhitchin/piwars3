@@ -24,6 +24,8 @@ Commands:
 * **on r g b**	Steady light in colour given
 * **twinkle**		Random twinkling
 * **police**		Attempt to imitate an emergency vehicle's lights
+* **hue**		Slowly move all LEDs through H element of HSV colour space
+* **strobe**		Repeatedly strobe 1-10 LEDs (random) a random colour each
 * **off**		All lights off
 * **die**		Kill the daemon
 

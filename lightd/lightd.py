@@ -126,6 +126,12 @@ while True:
 						if(wait):
 							obj.setok(okfunc)
 						obj.setnext(pulse)
+					if cmd == 'hue':
+						wait = False		# No delay on this finishing
+						obj.setnext(effect.Hue())
+					if cmd == 'strobe':
+						wait = False		# No delay on this finishing
+						obj.setnext(effect.Strobe())
 					if cmd == 'on':
 						wait = False		# No delay on this finishing
 						obj.setnext(effect.On(int(vals.pop(0)), int(vals.pop(0)), int(vals.pop(0))))

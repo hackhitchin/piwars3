@@ -58,6 +58,14 @@ class Pulse(Effect):
 		return self._nextobj((self.frame % 100) == 0)
 
 
+class Hue(Effect):
+	def values(self):
+		self.frame += 1
+		hue = (self.frame%100)/100.0
+		(r,g,b) = colorsys.hsv_to_rgb(hue,1,1)
+		return [(int(r*255), int(g*255), int(b*255))] * 60
+
+
 class On(Effect):
 	def __init__(self, r,g,b):
 		super(On,self).__init__()	
@@ -134,6 +142,32 @@ class Police(Effect):
 			leds[35] = light
 
 		return leds
+
+class Strobe(Effect):
+	'''Randomly strobe 1-10 LEDs'''
+
+	def reset(self):
+		self.leds = []
+		self.colours = []
+		self.frame = 0
+
+	def values(self):
+		self.frame += 1
+		if self.frame >3:
+			self.reset()
+			for i in range(random.randint(1,10)):
+				hue = random.random()
+				(r,g,b) = colorsys.hsv_to_rgb(hue,1,1)
+				self.colours.append((int(r*255), int(g*255), int(b*255)))
+				self.leds.append(random.randint(0,59))
+
+		vals = [(0,0,0)] * 60
+
+		if self.frame % 2:
+			for i, led in enumerate(self.leds):
+				vals[led] = self.colours[i]
+
+		return vals
 
 
 
