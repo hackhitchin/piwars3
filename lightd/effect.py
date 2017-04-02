@@ -67,11 +67,11 @@ class Pulse(Effect):
 		self.r = r
 		self.g = g
 		self.b = b
+		self.targetspeed = 100
 
 	def reset(self):
 		super(Pulse, self).reset()
 		self.speed = 100
-		self.targetspeed = 100
 
 	def values(self):
 		multiple = (1-math.cos(2*math.pi*self.frame/self.speed))/2
@@ -102,7 +102,51 @@ class Pulse(Effect):
 				# If more data, assume it's a speed
 				self.setdata(data)
 
+class Flash(Effect):
+	def __init__(self, r,g,b):
+		super(Flash,self).__init__()	
+		self.r = r
+		self.g = g
+		self.b = b
+		self.targetspeed = 100
 
+	def reset(self):
+		super(Flash, self).reset()
+		self.speed = 100
+		self.on = True
+
+	def values(self):
+		if self.on:
+			return [(self.r, self.g, self.b)] * 60
+		else:
+			return [(0,0,0)] * 60
+
+	def nextframe(self):
+		if self.speed != self.targetspeed:
+			if self.frame >= self.speed or self.frame >= self.targetspeed:
+				self.speed = self.targetspeed
+		self.frame += 1
+		if(self.frame>=self.speed):
+			self.frame = 0
+			self.on = not self.on
+		return self._nextobj((not self.on) == 0)
+
+	def setdata(self, data):
+		'''Set data
+		1 value = speed
+		3 values = r,g,b
+		4 values = r,g,b,speed'''
+		if len(data) == 1:
+			self.targetspeed = self._getint(data)
+			if self.targetspeed == 0:
+				self.targetspeed = 100	# Avoid /0 error on bad data
+		elif len(data) >= 3:
+			self.r = self._getint(data)
+			self.g = self._getint(data)
+			self.b = self._getint(data)
+			if len(data):
+				# If more data, assume it's a speed
+				self.setdata(data)
 
 
 class Hue(Effect):

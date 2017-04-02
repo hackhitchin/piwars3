@@ -123,9 +123,20 @@ while True:
 						now = True
 					if cmd == 'pulse':
 						pulse = effect.Pulse(int(vals.pop(0)), int(vals.pop(0)), int(vals.pop(0)))
+						# Pass anything else as data (eg, speed)
+						if len(vals):
+							pulse.setdata(vals)
 						if(wait):
 							obj.setok(okfunc)
 						obj.setnext(pulse)
+					elif cmd == 'flash':
+						flash = effect.Flash(int(vals.pop(0)), int(vals.pop(0)), int(vals.pop(0)))
+						# Pass anything else as data (eg, speed)
+						if len(vals):
+							flash.setdata(vals)
+						if(wait):
+							obj.setok(okfunc)
+						obj.setnext(flash)
 					elif cmd == 'hue':
 						wait = False		# No delay on this finishing
 						obj.setnext(effect.Hue())

@@ -12,13 +12,8 @@ def send(command):
 		sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
 		sock.connect(socketfile)
 		sock.settimeout(2)	# 2-second timeout on operations
-		sock.sendall('ping')
+		sock.sendall(command)
 		data = sock.recv(1024)
-		if data == 'OK':
-			sock.sendall(command)
-			data = sock.recv(1024)
-		else:
-			print "Connection failed"
 		sock.close()
 	except IOError as e:
 		print "Command failed", e
