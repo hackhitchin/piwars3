@@ -15,6 +15,9 @@ import rc
 import Calibration
 from lib_oled96 import ssd1306
 
+from golf import Golf
+from skittles import Skittles
+
 import VL53L0X
 # from smbus import SMBus  # Commented out as I don't believe its required.
 from enum import Enum
@@ -36,6 +39,8 @@ class Mode(Enum):
     MODE_SPEED = 3
     MODE_MAZE = 4
     MODE_CALIBRATION = 5
+    MODE_GOLF = 6
+    MODE_SKITTLES = 7
 
 
 class launcher:
@@ -64,10 +69,12 @@ class launcher:
             (Mode.MODE_RC, "RC"),
             (Mode.MODE_SPEED, "Speed"),
             (Mode.MODE_MAZE, "Maze"),
-            (Mode.MODE_CALIBRATION, "Calibration")
+            (Mode.MODE_CALIBRATION, "Calibration"),
+            (Mode.MODE_GOLF, "Golf"),
+            (Mode.MODE_SKITTLES, "Skittles")
         ))
         self.current_mode = Mode.MODE_NONE
-        self.menu_mode = Mode.MODE_SPEED
+        self.menu_mode = Mode.MODE_GOLF
 
         # Create oled object, nominating the correct I2C bus, default address
         # Note: Set to None if you need to disable screen
@@ -152,6 +159,10 @@ class launcher:
             self.start_speed_mode()
         elif self.menu_mode == Mode.MODE_CALIBRATION:
             self.start_calibration_mode()
+        elif self.menu_mode == Mode.MODE_GOLF:
+            self.start_rc_mode(accessory = Golf)
+        elif self.menu_mode == Mode.MODE_SKITTLES:
+            self.start_rc_mode(accessory = Skittles)
 
     @debounce(0.25)
     def menu_up(self):
@@ -257,7 +268,7 @@ class launcher:
         logging.info("Shutting Down Pi")
         os.system("sudo shutdown -h now")
 
-    def start_rc_mode(self):
+    def start_rc_mode(self, accessory = None):
         # Kill any previous Challenge / RC mode
         self.stop_threads()
 
@@ -266,7 +277,7 @@ class launcher:
 
         # Inform user we are about to start RC mode
         logging.info("Entering into RC Mode")
-        self.challenge = rc.rc(self.core, self.wiimote, self.oled)
+        self.challenge = rc.rc(self.core, self.wiimote, self.oled, accessory)
 
         # Create and start a new thread
         # running the remote control script
