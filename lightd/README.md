@@ -20,7 +20,8 @@ lights.send(<command>)
 Commands:
 * **now ...**		Change lights immediately instead of waiting for sequence to finish
 * **wait ...**	Don't return from lights.send() until previous sequence has finished
-* **pulse r g b**	Lights pulse on and off in colour given
+* **pulse r g b [speed]**	Lights pulse on and off in colour given
+* **flash r g b [speed]**	Lights flash on and off in colour given
 * **on r g b**	Steady light in colour given
 * **twinkle**		Random twinkling
 * **police**		Attempt to imitate an emergency vehicle's lights
@@ -31,7 +32,7 @@ Commands:
 * **die**		Kill the daemon
 
 Data:
-* **pulse** accepts either 1 integer, a new speed (default = 100, lower numbers are faster), 3 integers (a new RGB value) or 4 integers (R G B Speed)
+* **pulse** and **flash** accepts either 1 integer, a new speed (default = 100, lower numbers are faster), 3 integers (a new RGB value) or 4 integers (R G B Speed)
 * **on** accepts a float between 0.0 and 1.0, which modifies the brightness of the specified RGB value
 
 Examples:
