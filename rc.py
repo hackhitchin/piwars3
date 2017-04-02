@@ -112,7 +112,7 @@ class rc:
         right_motor_orig_scale_factor = right_motor_esc.scale_factor
 
         # Change motors to 1/4 speed
-        speed_factor = 0.5
+        speed_factor = 0.75
         left_motor_esc.set_scale_factor(speed_factor)
         right_motor_esc.set_scale_factor(speed_factor)
 
@@ -164,10 +164,10 @@ class rc:
             steer_softening = 0.0
 
             # speed_input and steer_input are expo'd values of stick movement,
-            if(l_throttle >= 0):
-                speed_input = pow(l_throttle, y_exp)
+            if(r_throttle >= 0):
+                speed_input = pow(r_throttle, y_exp)
             else:
-                speed_input = 0 - (pow(0 - l_throttle, y_exp))
+                speed_input = 0 - (pow(0 - r_throttle, y_exp))
             speed_input = speed_input * speed_scale
 
             if(r_steering >= 0):
@@ -217,6 +217,7 @@ class rc:
                 if self.tank:
                     self.core_module.throttle(l_throttle, r_throttle)
                 else:
+                    # self.core_module.throttle(c_l_motor, c_r_motor, core.ServoEnum.LEFT_AUX_ESC, core.ServoEnum.RIGHT_AUX_ESC)
                     self.core_module.throttle(c_l_motor, c_r_motor)
 
             print("Motors %0.2f, %0.2f" % (c_l_motor, c_r_motor))

@@ -10,7 +10,7 @@ class StraightLine:
         self.core = core_module
         self.ticks = 0
         self.tick_time = 0.05  # How many seconds per control loop
-        self.time_limit = 1.5  # How many seconds to run for
+        self.time_limit = 1.0  # How many seconds to run for
         self.follow_left = False
 
         # Initial speed
@@ -85,6 +85,10 @@ class StraightLine:
         tick_limit = self.time_limit / self.tick_time
         side_prox = 0
 
+        self.core.throttle(0, 0, core.ServoEnum.LEFT_AUX_ESC, core.ServoEnum.RIGHT_AUX_ESC)
+        time.sleep(1.0)
+        self.core.throttle(1, 1, core.ServoEnum.LEFT_AUX_ESC, core.ServoEnum.RIGHT_AUX_ESC)
+
         while not self.killed and self.ticks < tick_limit and side_prox != -1:
             d_left = self.core.read_sensor(2)
             # d_front = self.core.read_sensor(1)
@@ -139,7 +143,7 @@ class StraightLine:
         )
 
         self.core.stop()
-        self.core.set_neutral( core.ServoEnum.LEFT_AUX_ESC, core.ServoEnum.RIGHT_AUX_ESC)
+        self.core.throttle(-1, -1, core.ServoEnum.LEFT_AUX_ESC, core.ServoEnum.RIGHT_AUX_ESC)
 
 
 if __name__ == "__main__":

@@ -85,11 +85,11 @@ class Core():
         # Add Auxilary servo's. NOTE: Aux esc's are not reversed.
         self.servos[ServoEnum.LEFT_AUX_ESC] = [
             servo_control.Servo_Controller(
-                min=800, mid=1300, max=1800, bReverse=False
+                min=300, mid=1050, max=1900, bReverse=False
             ), LEFT_AUX_ESC_PIN, 'Left Aux']
         self.servos[ServoEnum.RIGHT_AUX_ESC] = [
             servo_control.Servo_Controller(
-                min=800, mid=1300, max=1800, bReverse=False
+                min=300, mid=1050, max=1900, bReverse=False
             ), RIGHT_AUX_ESC_PIN, 'Right Aux']
 
         # Add Auxilary servo's. NOTE: Ball Flinger esc's are not reversed.
