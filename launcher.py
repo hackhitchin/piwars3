@@ -18,6 +18,8 @@ from lib_oled96 import ssd1306
 from golf import Golf
 from skittles import Skittles
 
+from LineFollower import LineFollower
+
 import VL53L0X
 # from smbus import SMBus  # Commented out as I don't believe its required.
 from enum import Enum
@@ -41,6 +43,7 @@ class Mode(Enum):
     MODE_CALIBRATION = 5
     MODE_GOLF = 6
     MODE_SKITTLES = 7
+    MODE_LF = 8
 
 
 class launcher:
@@ -71,7 +74,8 @@ class launcher:
             (Mode.MODE_MAZE, "Maze"),
             (Mode.MODE_CALIBRATION, "Calibration"),
             (Mode.MODE_GOLF, "Golf"),
-            (Mode.MODE_SKITTLES, "Skittles")
+            (Mode.MODE_SKITTLES, "Skittles"),
+            (Mode.MODE_LF, "Line Follower")
         ))
         self.current_mode = Mode.MODE_NONE
         self.menu_mode = Mode.MODE_GOLF
@@ -163,6 +167,8 @@ class launcher:
             self.start_rc_mode(accessory = Golf)
         elif self.menu_mode == Mode.MODE_SKITTLES:
             self.start_rc_mode(accessory = Skittles)
+        elif self.menu_mode == Mode.MODE_LF:
+            self.start_line_follow()
 
     @debounce(0.25)
     def menu_up(self):
@@ -352,6 +358,29 @@ class launcher:
 
         self.challenge_thread.start()
         logging.info("Speed Thread Running")
+
+    def start_line_follow(self):
+        # Kill any previous Challenge / RC mode
+        self.stop_threads()
+
+        # Set Wiimote LED to RC Mode index
+        self.current_mode = Mode.MODE_LF
+
+        # Inform user we are about to start RC mode
+        logging.info("Entering into Line Following")
+
+        self.challenge = \
+            LineFollower(self.core, self.wiimote, self.oled)
+
+        # Create and start a new thread
+        # running the remote control script
+        logging.info("Starting Line Follower Thread")
+
+        self.challenge_thread = threading.Thread(
+            target=self.challenge.run)
+
+        self.challenge_thread.start()
+        logging.info("Line Follower Running")
 
     def run(self):
         """ Main Running loop controling bot mode and menu state """
