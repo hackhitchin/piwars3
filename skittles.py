@@ -43,8 +43,8 @@ class Skittles(Accessory):
 							ServoEnum.LEFT_FLINGER_SERVO, ServoEnum.RIGHT_FLINGER_SERVO)
 
 	def up(self):
-		self.left_claw_pos -= self.claw_increment * 20
-		self.right_claw_pos -= self.claw_increment * 20
+		self.left_claw_pos -= self.claw_increment
+		self.right_claw_pos -= self.claw_increment
 		self.left_claw_pos = self.gate_claws(self.left_claw_pos)
 		self.right_claw_pos = self.gate_claws(self.right_claw_pos)
 		self.core.throttle(self.left_claw_pos, self.right_claw_pos,
@@ -67,6 +67,14 @@ class Skittles(Accessory):
 
 		self.core.throttle(self.left_motor_speed, self.right_motor_speed,
 							ServoEnum.LEFT_FLINGER_ESC, ServoEnum.RIGHT_FLINGER_ESC)		
+
+	def btn_y(self):
+		self.left_claw_pos -= self.claw_increment * 20
+		self.right_claw_pos -= self.claw_increment * 20
+		self.left_claw_pos = self.gate_claws(self.left_claw_pos)
+		self.right_claw_pos = self.gate_claws(self.right_claw_pos)
+		self.core.throttle(self.left_claw_pos, self.right_claw_pos,
+							ServoEnum.LEFT_FLINGER_SERVO, ServoEnum.RIGHT_FLINGER_SERVO)
 
 	def gate_esc(self, pos):
 		return min(1, max(-1, pos))

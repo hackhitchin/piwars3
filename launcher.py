@@ -72,7 +72,7 @@ class launcher:
             (Mode.MODE_SKITTLES, "Skittles")
         ))
         self.current_mode = Mode.MODE_NONE
-        self.menu_mode = Mode.MODE_GOLF
+        self.menu_mode = Mode.MODE_SKITTLES
 
         # Create oled object, nominating the correct I2C bus, default address
         # Note: Set to None if you need to disable screen
