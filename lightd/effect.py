@@ -257,7 +257,7 @@ class Strobe(Effect):
 				hue = random.random()
 				(r,g,b) = colorsys.hsv_to_rgb(hue,1,1)
 				self.colours.append((int(r*255), int(g*255), int(b*255)))
-				self.leds.append(random.randint(0,59))
+				self.leds.append(random.randint(0,35))
 
 		vals = [(0,0,0)] * 36
 

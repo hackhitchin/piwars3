@@ -25,6 +25,8 @@ import VL53L0X
 from enum import Enum
 from decorators import debounce
 
+import lights
+
 try:
     from collections import OrderedDict
 except ImportError:
@@ -368,6 +370,8 @@ class launcher:
 
         # Inform user we are about to start RC mode
         logging.info("Entering into Line Following")
+
+        lights.send('strobe')
 
         self.challenge = \
             LineFollower(self.core, self.wiimote, self.oled)
